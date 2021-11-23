@@ -2,8 +2,9 @@
 ## Copyright 2021 Adina-Maria Amzarescu 321CA
 
 This is a project that tests 2 string processing algorithms, **Rabin-Karp** and **Knuth-Morris-Pratt**.
+The algoriths were tested in C language.
 
-_________________________________________________________________________________________________________
+______________________________________________________________________________________________________________
 
 ### `` Rabin-Karp - approximate match``
 
@@ -18,7 +19,7 @@ The time complexity is O(m+n), but for the worst case, it is O(mn).
   I changed the function to match my tests, I added the out file in the header and also
   added the "ok" variable to check if there is at least one pattern.
   
-_________________________________________________________________________________________________________
+______________________________________________________________________________________________________________
 
 ### ``Knuth-Morris-Prat - exact match``
 
@@ -32,4 +33,12 @@ The time complexity of KMP is O(n).
   I changed the function to match my tests, I added the out file in the header and also
   added the "ok" variable to check if there is at least one pattern.
  
-_________________________________________________________________________________________________________
+______________________________________________________________________________________________________________
+
+### Tests
+
+For both algorithms I used the same tests. As you can see, the results are the same. You can find the output
+of each algorithm in _out-rk_ and _out-kmp_. Those include multiple spacing(test 1, 2, 5, 7),
+large(test 6, 7 and 8) and small texts( test 1, test 3), binary text(test 4). I also added one test in which
+the pattern is not found(test 5), a single letter search, word and phrase searching.
+One text contains only one letter (test 3). 
