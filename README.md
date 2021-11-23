@@ -1,6 +1,5 @@
 # String processing Algorithms
-## Adina-Maria Amzarescu 321CA
-### 2021
+## Copyright 2021 Adina-Maria Amzarescu 321CA
 
 This is a project that tests 2 string processing algorithms, **Rabin-Karp** and **Knuth-Morris-Pratt**.
 
