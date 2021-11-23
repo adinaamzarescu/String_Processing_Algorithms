@@ -2,7 +2,8 @@
 ## Adina-Maria Amzarescu 321CA
 ### 2021
 
-This is a project that tests 2 string processing algorithms, **Rabin-Karp** and **Knuth-Morris-Pratt**. 
+This is a project that tests 2 string processing algorithms, **Rabin-Karp** and **Knuth-Morris-Pratt**.
+
 `` Rabin-Karp - approximate match``
 
 It checks the pattern by moving window one by one, but without checking all characters for all cases, it finds the hash value. When the hash value is matched, then only it tries to check each character. This procedure makes the algorithm more efficient.
