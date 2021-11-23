@@ -2,7 +2,7 @@
 ## Copyright 2021 Adina-Maria Amzarescu 321CA
 
 This is a project that tests 2 string processing algorithms, **Rabin-Karp** and **Knuth-Morris-Pratt**.
-The algoriths were tested in C language.
+The algorithms were tested in C language.
 
 ______________________________________________________________________________________________________________
 
