@@ -39,6 +39,8 @@ ________________________________________________________________________________
 
 For both algorithms I used the same tests. As you can see, the results are the same. You can find the output
 of each algorithm in _out-rk_ and _out-kmp_. Those include multiple spacing(test 1, 2, 5, 7),
-large(test 6, 7 and 8) and small texts( test 1, test 3), binary text(test 4). I also added one test in which
-the pattern is not found(test 5), a single letter search, word and phrase searching.
-One text contains only one letter (test 3). 
+large(test 6, 7 and 8) and small texts(test 1, test 3), binary text(test 4). I also added one test in which
+the pattern is not found(test 5), a single letter search(test 7), word and phrase searching.
+One text contains only one letter (test 3).
+
+In order to test other files, you need to add it in the **in_files** array.
