@@ -1,3 +1,4 @@
+// Copyright 2021 Adina-Maria Amzarescu 321CA
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
