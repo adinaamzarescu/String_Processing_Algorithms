@@ -45,4 +45,4 @@ One text contains only one letter (test 3).
 
 In order to test other files, you need to add it in the **in_files** array.
 
-In every input file you can find the pattern on the first line.
+In every input file you can find the pattern on the first line and then the text.
