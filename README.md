@@ -9,7 +9,8 @@ It checks the pattern by moving window one by one, but without checking all char
 
 The time complexity is O(m+n), but for the worst case, it is O(mn).
 
-* Source of inspiration: https://github.com/Chediak/ds-in-c/blob/main/rabin-karp.c 
+* Source of inspiration: https://github.com/Chediak/ds-in-c/blob/main/rabin-karp.c
+
   I changed the function to match my tests, I added the out file in the header and also
   added the "ok" variable to check if there is at least one pattern. 
 
