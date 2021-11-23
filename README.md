@@ -44,3 +44,5 @@ the pattern is not found(test 5), a single letter search(test 7), word and phras
 One text contains only one letter (test 3).
 
 In order to test other files, you need to add it in the **in_files** array.
+
+In every input file you can find the pattern on the first line.
