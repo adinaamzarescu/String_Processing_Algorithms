@@ -41,6 +41,7 @@ ________________________________________________________________________________
     * Some of them were created by me
     * Some were generated using https://pinetools.com/random-string-generator
     * Some were generated using https://loremipsum.io/generator/
+    * For the genetic codes: http://faculty.ucr.edu/~mmaduro/random.htm
 
 For testing the 2 aglorithms I created 40 tests. You can find them in _input_.
 
@@ -52,7 +53,7 @@ of each algorithm in _out-rk_ and _out-kmp_.
   * Multiple spacing (test 1, 2, 5, 7)
   * Large and small texts
   * Binary text (test 4)
-  * The pattern is not found (tests 5, 12, 14, 19 and 40)
+  * The pattern is not found (tests 5, 12, 14, 19, 36 and 40)
   * A single letter search (tests 7 and 11)
   * Word and phrase searching 
   * One text contains only one letter (test 3)
@@ -72,6 +73,8 @@ of each algorithm in _out-rk_ and _out-kmp_.
    * The 26th test has the same pattern and text
    * Since those 2 algorithms are used to detect plagiarism I included 5 tests (34 to 38)
      in which the text is a senior thesis
+   * Also those 2 algorithms are used to detect abnormalities in the genetic code, I also
+     included 2 tests (38 and 39) in which the text is a DNA sequence
 
 In order to test other files, you need to add it in the **in_files** array.
 
