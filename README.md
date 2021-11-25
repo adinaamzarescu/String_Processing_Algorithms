@@ -49,11 +49,11 @@ of each algorithm in _out-rk_ and _out-kmp_.
 
 ### _Details_
 
-  * Multiple spacing(test 1, 2, 5, 7)
+  * Multiple spacing (test 1, 2, 5, 7)
   * Large and small texts
-  * Binary text(test 4)
-  * The pattern is not found(tests 5, 12, 14, 19 and 40)
-  * A single letter search(tests 7 and 11)
+  * Binary text (test 4)
+  * The pattern is not found (tests 5, 12, 14, 19 and 40)
+  * A single letter search (tests 7 and 11)
   * Word and phrase searching 
   * One text contains only one letter (test 3)
   * The 15th test is empty
@@ -64,13 +64,14 @@ of each algorithm in _out-rk_ and _out-kmp_.
       * letters
        
           * lower (tests 30 and 31)
-          * lpper (tests 32 and 33)
+          * upper (tests 32 and 33)
           * mixt (tests 27, 28 and 29)
        
       * symbols (tests 19, 20 and 21)
    * Tests 22 to 25 have as a pattern a paragraph
    * The 26th test has the same pattern and text
-   * 
+   * Since those 2 algorithms are used to detect plagiarism 
+     I included 5 tests (34 to 38) in which the text is a senior thesis
 
 In order to test other files, you need to add it in the **in_files** array.
 
