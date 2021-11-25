@@ -77,6 +77,6 @@ of each algorithm in _out-rk_ and _out-kmp_.
 
 ______________________________________________________________________________________________________________
 
-In order to test other files, you need to add them in the **in_files** array.
+In order to test other files, you need to add them in the **in_files** array and change the NRFILES macro.
 
 In every input file you can find the pattern on the first line and then the text.
