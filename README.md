@@ -37,11 +37,36 @@ ________________________________________________________________________________
 
 ### Tests
 
+  * Source
+    * Some of them were created by me
+    * Some were generated using https://pinetools.com/random-string-generator
+    * Some were generated using https://loremipsum.io/generator/
+
+For testing the 2 aglorithms I created 40 tests. You can find them in _input_.
+
 For both algorithms I used the same tests. As you can see, the results are the same. You can find the output
-of each algorithm in _out-rk_ and _out-kmp_. Those include multiple spacing(test 1, 2, 5, 7),
-large(test 6, 7 and 8) and small texts(test 1, test 3), binary text(test 4). I also added one test in which
-the pattern is not found(test 5), a single letter search(test 7), word and phrase searching.
-One text contains only one letter (test 3).
+of each algorithm in _out-rk_ and _out-kmp_.
+
+#### _Details_
+
+  * Multiple spacing(test 1, 2, 5, 7)
+  * Large and small texts
+  * Binary text(test 4)
+  * The pattern is not found(tests 5, 12, 14, 19 and 40)
+  * A single letter search(tests 7 and 11)
+  * Word and phrase searching 
+  * One text contains only one letter (test 3)
+  * The 15th test is empty
+  * I also have tests that contain only
+        * numbers (tests 16, 17 and 18)
+        * letters 
+          * lower (tests 30 and 31)
+          * upper (tests 32 and 33)
+          * mixt (tests 27, 28 and 29)
+        * symbols (tests 19, 20 and 21)
+   * Tests 22 to 25 have as a pattern a paragraph
+   * The 26th test has the same pattern and text
+   * 
 
 In order to test other files, you need to add it in the **in_files** array.
 
