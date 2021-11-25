@@ -1,0 +1,1427 @@
+Pattern: Pentru a controla abaterea fata de poziția dorită, putem micșora sau mări viteza
+fiecărei roți cu o anumita constantă pe baza semnului erorii. Sa luam de exemplu viteza
+rotii stângi. Comanda pentru aceasta va respecta următoarea formulă. De menționat
+este faptul că pe roata dreaptă aplicăm aceeași formulă dar cu semnele inversate
+Acest model va funcționa foarte bine, însă vom avea parte de oscilații mari,
+deoarece schimbarea de turație va fi foarte bruscă indiferent de mărimea erorii. Acest
+model este un exemplu de control proporțional și astfel putem adapta formula:
+Dacă vrem să eliminam din aceste oscilații bruște, atunci când avem o eroare
+mai mare trebuie să avem si o comandă mai mare, iar când eroarea este mică și
+comanda trebuie să fie mică. Aceasta este componenta integrală a algoritmului de
+reglare PID.
+Iar daca vrem o comandă si mai lină putem adăuga si ultima componentă a
+regulatorului PID, și anume componenta derivativă.
+Pentru a implementa formula de mai sus pe un microcontroler este necesară
+discretizarea acesteia. Una din cele mai simple metode de discretizare o reprezintă
+dezvoltarea in serie Taylor a derivatei și o aproximare Riemann a integralei. Astfel
+obținem următoarea formulă:
+49
+După ce vom include valoarea lui ∆t in interiorul constantelor Ki și Kd vom
+ajunge la următorul algoritm, ce calculează diferența de viteză ce trebuie aplicată
+fiecărei roți.
+eroarea_anterioară = 0
+integrala = 0
+repeta
+eroarea_curentă = distanța_față – distanța_spate
+integrala = integrala + eroarea_curentă
+derivata = eroarea_curentă – eroarea_anterioară
+comanda = Kr * eroarea_curentă + Ki * integrala + Kd* derivata
+eroare_anterioară = eroarea_curentă
+cat timp (1==1)
+Pentru a afla valorile constantelor Kr, Ki si Kd, am folosit metoda de acordare
+experimentală Ziegler-Nichols. Această metodă se bazează pe încercarea mai multor
+valori ale constantelor, iar in urma măsurătorilor alegem varianta cea mai bună, mai
+exact:
+ Am ales Kr = 5 , iar Kd și Ki 0, după mărirea progresivă a valorii lui Kr, am
+observat ca robotul rămâne pe traseul stabilit atunci când Kr = 9.
+ Am lăsat valoarea lui Kr nemodificată si am crescut cu pași mici Kd, in jurul valorii
+0,6 oscilațiile au început sa scadă in intensitate.
+ Am încercat si mărirea constantei Ki, însă au apărut oscilații prea mari, valoarea
+acesteia influențând intr-un mod accentuat efectul asupra robotului.
+4.5. Etapele construirii robotului
+Deoarece construirea robotului are un grad mediu de dificultate, am luat decizia
+de a împarți construcția lui in câteva etape cu un grad mai scăzut de dificultate. Testând
+la fiecare etapă subansamblele implicate si conexiunile aferente, putem executa mai
+ușor operațiuni de depanare si calibrare, rezultatul final fiind cel așteptat.
+Figura 4.14. Șasiu + Arduino UNO
+50
+Am început prin a asambla șasiul și roțile. După ce ne-am asigurat că toate
+piesele sunt corect fixate, iar motoarele funcționează am trecut mai departe, la
+construirea driverului de motoare. Aceasta a fost o operație minuțioasa ce a necesitat
+însă un grad mic de dificultate. După construcție acesta a fost testat si pus pe șasiu.
+Următorul pas a fost reprezentat de montarea primului senzor de distanța pe
+servomotor, și conectarea la Arduino. Acest pas a implicat si calibrarea senzorului,
+pentru a fi gata de folosire imediat ce tot ansamblul va fi gata.
+Au urmat adăugarea celui de-al doilea ansamblu servomotor-senzor de distanța
+si a modulului Bluetooth. Rezultatul final este acesta:
+Figura 4.15. Driver de motoare
+Figura 4.16. Robot autonom
+Text: București 2013
+
+Universitatea Politehnica Bucureşti
+Facultatea de Automatică şi Calculatoare
+Departamentul de Automatică și Ingineria Sistemelor
+LUCRARE DE LICENŢĂ
+Proiectarea unui robot autonom mobil
+Absolvent
+Toader M. Ștefan
+Coordonator
+Prof. dr. ing. Sgarciu Valentin
+1
+Cuprins
+Introducere................................................................................................................................ 3
+Capitolul 1: Roboți.................................................................................................................... 4
+1.1. Ce este robotul?...............................................................................................................................4
+1.2. Definițiile robotului. ..........................................................................................................................4
+1.3. Schema bloc a robotului industrial ................................................................................................5
+1.4. Clasificarea roboţilor........................................................................................................................5
+1.5. Arhitectura roboților.........................................................................................................................6
+1.5.1. Sistemul senzorial ....................................................................................................................6
+1.5.2. Sistemul de acţionare și sistemul de transmisie..................................................................7
+1.5.3. Sistemul decizional...................................................................................................................7
+1.6 Microcontroler...................................................................................................................................7
+1.6.1 Utilizarea microcontrolerelor....................................................................................................9
+1.6.2 Arhitectura unității centrale.......................................................................................................9
+1.6.3 Memoria ....................................................................................................................................12
+1.6.4 Limbaje de programare...........................................................................................................13
+1.6.5. Criterii de alegere a unui microcontroler.............................................................................14
+Capitolul 2: Medii de programare folosite............................................................................. 15
+2.1. Eclipse SDK 4.2 .............................................................................................................................15
+2.1.1. Ce este nou in v4.2 ................................................................................................................16
+2.1.2. Ce este Eclipse şi Organizaţia Eclipse? .............................................................................16
+2.1.3. Un model unic pentru dezvoltarea open source................................................................18
+2.1.4. Istoria Eclipse..........................................................................................................................19
+Capitolul 3: Bluetooth............................................................................................................. 21
+3.1. Ce reprezintă Bluetooth ?.............................................................................................................21
+3.1.1. Istorie........................................................................................................................................21
+3.1.2. Implementare ..........................................................................................................................22
+3.2. Versiuni de Bluetooth....................................................................................................................22
+3.3. Utilizarea Bluetooth .......................................................................................................................23
+3.3.1. Stiva de protocoale.................................................................................................................23
+2
+3.3.2. Legăturile vocale şi de date ..................................................................................................25
+3.4. Comunicaţia Bluetooth..................................................................................................................26
+3.4.1. Descoperirea dispozitivelor Bluetooth.................................................................................26
+3.4.2. Conectarea la o bază de date Service Discovery .............................................................26
+3.4.3. Conectarea la un serviciu Bluetooth....................................................................................27
+3.4.4. Moduri de descoperire și conectare ....................................................................................27
+3.5. Stiva de protocoale Bluetooth......................................................................................................27
+3.5.1. Protocoale utilizate de Bluetooth..........................................................................................27
+3.5.2. Protocoale ale Nucleului Bluetooth......................................................................................29
+Capitolul 4: Proiectarea și implementarea sistemului.......................................................... 31
+4.1. Prezentarea și obiectivele sistemului .........................................................................................31
+4.2. Componente hardware .................................................................................................................32
+4.2.1. Arduino UNO R3.....................................................................................................................32
+4.2.2. Senzor de distanță HC-SR04 ...............................................................................................34
+4.2.3. Modul Bluetooth HC-05 .........................................................................................................35
+4.2.4. Driver de Motoare...................................................................................................................36
+4.2.5. Elemente de acționare...........................................................................................................37
+4.3. Arhitectura hardware a robotului .................................................................................................38
+4.4. Componente software...................................................................................................................43
+4.4.1. Algoritmul aplicației smartphone ..........................................................................................43
+4.4.2. Algoritmul programului Arduino............................................................................................46
+4.5. Etapele construirii robotului..........................................................................................................49
+Concluzii.................................................................................................................................. 51
+Anexe....................................................................................................................................... 52
+Listă imagini, tabele și abrevieri............................................................................................ 55
+Bibliografie.............................................................................................................................. 56
+3
+Introducere
+Încă din antichitate omul si-a confecționat in diferite forme și grade diferite de
+complexitate unelte pentru a simplifica sau înlocui munca fizică. Aici se înscriu şi roboţii,
+ocupând o poziţie superioare in clasament mai ales datorită complexităţii lor.
+Noţiunea de robot datează de peste 4000 de ani. Omul şi-a imaginat
+dintotdeauna dispozitive mecanice inteligente care să ii ușureze munca zilnică și efortul
+fizic depus. Astfel a construit diverse mașinării automate, sau mai puțin automate, și-a
+imaginat fel de fel de roboti, iar revoluția informatica a marcat saltul de la societatea
+industrializată la societatea avansat informatizată.
+Termenul de "robot" a fost folosit prima data in 1920 de cehul Karel Capek într-o
+piesa numită "Robotul universal al lui Kossum". Ideea acestei piese era una simpla,
+oamenii creau robotul, iar acesta își omora creatorul. In continuare majoritatea filmelor și
+cărților pe aceasta tema prezentau robotii ca fiind maşinării dăunătoare și distrugătoare.
+Roboţii, in special cei industriali, oferă beneficii substanțiale omenirii. Aceștia pot
+influenţa pozitiv calitatea vieţii prin înlocuirea omului in muncile grele, in spaţii
+periculoase, unde condiții de mediu sunt dăunătoare omului.
+Domeniile de aplicare a roboților se lărgesc mereu, aceștia fiind deja utilizați in
+industrie , transporturi și agricultura, in cercetare științifica, in explorarea oceanelor și a
+spațiului cosmic.
+Lucrarea de fata prezintă modul de proiectare și realizare a unui mic robot
+echipat cu o placa de dezvoltare Arduino UNO și diferiți senzori, ce poate comunica cu
+un smartphone prin intermediul unei conexiuni Bluetooth. 
+4
+Capitolul 1: Roboți
+1.1. Ce este robotul?
+Un robot este un operator mecanic sau virtual, artificial. Robotul este un sistem
+compus din mai multe elemente: mecanică, senzori și actuatori precum și un mecanism
+de direcționare. Mecanica stabilește înfățișarea robotului și mișcările posibile pe timp de
+funcționare. Senzorii și actorii sunt întrebuințați la interacțiunea cu mediul. Mecanismul
+de direcționare are grijă ca robotul să-și îndeplinească obiectivul cu succes, evaluând
+de exemplu informațiile senzorilor. Acest mecanism reglează motoarele și planifică
+mișcările care trebuiesc efectuate.
+Isaac Asimov publica în anul 1942 în nuvela numit "Runaround" trei legi:
+ Un robot nu poate afecta existenţa umană sau datorită inacţiunii sale să permită
+existenţei umane să meargă către distrugere.
+ Un robot trebuie să îndeplinească sarcinile date de om cu excepţia celor care vin în
+conflict cu prima lege.
+ Un robot trebuie să se protejeze singur contra distrugerii cu excepţia cazurilor ce fac
+obiectul legii întâi sau legii a doua.
+1.2. Definițiile robotului.
+Definiţiile robotului se referă la mişcare sau la funcţionarea într-un mediu anume:
+ conform specialiştilor japonezi robotul este un dispozitiv mecanic acţionat cu forţe
+motrice cu comandă inteligentă și care acţionează conform voinţei umane;
+ Institutul Francez de Standardizare defineşte robotul ca fiind un manipulator automat
+reprogramabil și polivalent, capabil să realizeze poziţionarea şi reorientarea pieselor
+printr-o mişcare variabilă și programabilă a braţelor terminale, prin intermediul unor
+dispozitive;
+ Institutul American de Robotică consideră robotul ca fiind un operator reprogramabil
+și multifuncţional pentru deplasarea obiectelor pe traiectorii stabilite anterior în
+realizarea unor sarcini concrete;
+ În literatura românească de specialitate robotul este definit ca fiind un echipament
+automat, adaptabil prin reprogramare la condiţiile de mediu în care acţionează.
+Robotica este acea parte a ştiinţei care se ocupă cu studiul operaţiilor umanoide şi
+se situează la frontiera mecanicii cu informatica, electrotehnica, electronica și ştiinţa
+sistemelor și calculatoarelor, termotehnică, hidraulică. Operaţiile umanoide sunt
+operaţiile efectuate de către om cu ajutorul braţelor şi picioarelor coordonate de
+organele de simţ.
+5
+1.3. Schema bloc a robotului industrial
+Figura 1.1. Schema bloc a robotului industrial
+Pe lângă caracteristicile specifice oricărui sistem mobil: dimensiuni, deplasări
+realizate, precizie, repetabilitate, tip de acționare, sarcină transportată, viteză de
+deplasare, există caracteristici specifice robotului, cum ar fi: număr de grade de libertate,
+volumul spațiului de lucru, adaptabilitate la mediu, programabilitate, fiabilitate.
+Pe baza acestor caracteristici s-au definit generațiile de roboți:
+ Generația I - roboți ce acționează pe baza unui program flexibil prestabilit prin
+învățare directă
+ Generația II - roboți cu un program flexibil prestabilit, ce se poate modifica pe baza
+informaţiilor furnizate de sistemul senzorial;
+ Generaţia III - roboţi ce înglobează elemente de inteligenţă artificială.
+1.4. Clasificarea roboţilor
+ din punctul de vedere al gradului de mobilitate se cunosc:
+ roboți ficși
+ roboți mobili
+ din punct de vedere al informației de intrare și a metodei de instruire există:
+ roboți acționați de om
+ roboți cu sistem de comandă cu relee(secvențial)
+ roboți cu sistem secvențial cu program modificabil
+ roboți repetitori( cu program prin instruire)
+ roboți inteligenți
+ din punct de vedere al sistemului de coordonate roboţii sunt în sistem de coordonate:
+ carteziene (18%)
+ cilindrice (33%)
+ sferice (40% )
+ din punct de vedere al sistemului de comandă:
+6
+ comandă punct cu punct (unde nu interesează traiectoria propriu-zisă)
+ comandă pe contur (implică coordonarea mişcării axelor)
+ comandă pe întreaga traiectorie (implică toţi parametrii de mişcare)
+ din punct de vedere al sarcinii manipulate
+ din punct de vedere al sistemului de acţionare:
+ hidraulică (40%)
+ electrică(30% )
+ pneumatică (21% )
+ mixtă
+ din punct de vedere al preciziei de poziţionare:
+ sub 0,1 mm
+ (0,1 ÷ 0,5) mm
+ (0,5 ÷ 1) mm
+ (1 ÷ 3) mm
+ peste 3 mm;
+ din punctul de vedere al tipului de programare:
+ cu programare rigidă (fără posibilităţi de corecţie)
+ cu programare flexibilă (există posibilitatea modificării programului)
+ cu programare adaptivă (există posibilitatea adaptării automate a programului în
+timpul funcţionării)
+1.5. Arhitectura roboților
+Arhitectura internă a unui robot conţine cinci sisteme importante, fiecare dintre
+acestea aparţinând unui domeniu al tehnicii clasice:
+ sistemul mecanic de susţinere şi al articulaţiilor (cuplelor de rotaţie şi de translaţie)
+ sistemul de acţionare (hidraulic, pneumatic, electric sau mixt)
+ sistemul de transmisie al mişcării
+ sistemul senzorial (intern și extern)
+ sistemul decizional
+1.5.1. Sistemul senzorial
+Funcţiile sistemului senzorial sunt de a prelua informațiile din mediu, și de a le pune
+la dispoziție sistemului decizional in vederea creării de comenzi.
+Clasificare :
+ senzori interni - plasaţi pe buclele interne de reglare și ajută la descrierea traiectoriei
+segmentelor mecanice componente
+ senzori externi - se utilizează pe buclele externe pentru coordonarea traiectoriei
+generale a ansamblului
+ senzori de securitate - utilizaţi pe buclele interne sau externe de reacţie pentru
+sesizarea pericolelor (ciocniri, creşterea temperaturii etc. )
+7
+Senzorii interni sunt în general de tip poziţie și deplasare. Cei mai utilizaţi în acest
+caz sunt senzorii de tip rezistiv și cei de tip optic. Sistemele senzoriale de tip optic conţin
+un generator de flux luminos (de regulă un LED) și un element receptor(fototranzistor
+sau fotocelulă). Cei mai utilizaţi senzori pentru distanța sunt, datorită raportului
+preţ/precizie sunt senzorii optici în infraroşu şi senzorii cu ultrasunete, formaţi dintr-un
+emiţător de undă şi un receptor comandat în fază cu emiţătorul.
+Senzorii externi sunt senzori de efort (în general au la bază mărci tensometrice
+plasate pe concentratoare de efort), senzori de alunecare sau senzori tactili.
+Sistemul senzorial de securitate are rolul de a evita coliziunile când apar regimuri de
+funcţionare sau obstacole neprevăzute.
+1.5.2. Sistemul de acţionare și sistemul de transmisie
+Sistemul de acţionare se alege în funcţie de clasa de operaţii ce trebuie executate, în
+funcţie de modul de lucru, de viteza de deplasare, de sarcină și de spaţiul de mişcare
+precum și de precizia de poziţionare. Astfel există:
+ sisteme de acţionare electrică (aproximativ 30% din numărul acestora)
+ sisteme de acţionare pneumatice (cam 21% din cazuri)
+ sisteme de acţionare hidraulice pentru sarcini mari şi deplasări limitate în spaţiu.
+ sisteme de acţionare mixte (9% din variantele constructive) - de tip electropneumatic
+sau electrohidraulic
+1.5.3. Sistemul decizional
+Pentru a fi considerat inteligent (sau autonom), un robot, in ziua de azi, are
+nevoie de măcar un microcontroler pentru a putea procesa informațiile preluate de
+senzori din mediu. După procesarea datelor trebuie luată o decizie, și o comanda este
+trimisa către elementele de execuție.
+1.6 Microcontroler
+Un microcontroler( prescurtat µC, uC sau MCU) este în esenţă o configuraţie
+minimală de sistem de calcul, capabil să execute la o viteză foarte mare instrucţiunile
+unui program stocat în memorie; acest program este o secvenţă logică de operaţii ce
+poate implementa algoritmii necesari pentru controlul proceselor.
+Microcontrolerul are integrat pe acelaşi chip: oscilatorul, memoria (RAM, ROM,
+EEPROM), numărătoare, blocuri analogice, interfeţe de comunicaţie și porturi de intrareieşire.
+8
+La modul general un controler este, actualmente, o structură electronică
+destinată controlului unui proces sau, mai general, unei interacțiuni caracteristice cu
+mediul exterior, fără să fie necesară intervenția operatorului uman.
+Primele controlere au fost realizate în tehnologii pur analogice, folosind
+componente electronice discrete și/sau componente electromecanice (de exemplu
+relee). Cele care fac apel la tehnica numerică modernă au fost realizate inițial pe baza
+logicii cablate (cu circuite integrate numerice standard SSI și MSI ) și a unei electronici
+analogice uneori complexe, motiv pentru care ocupau dimensiuni mari, aveau un
+consum energetic pe măsură și, nu de puține ori, o fiabilitate care lăsa de dorit.
+Apariția și utilizarea microprocesoarelor de uz general a dus la o reducere consistentă a
+costurilor, dimensiunilor, consumului și o îmbunătățire a fiabilității. Există și la ora
+actuală o serie de astfel de controlere de calitate, realizate în jurul unor microprocesoare
+de uz general cum ar fi Z80 (Zilog), 8086/8088 (Intel), 6809 (Motorola), etc.
+9
+1.6.1 Utilizarea microcontrolerelor
+Toate aplicațiile în care se utilizează microcontrolere fac parte din categoria
+sisteme încapsulate-integrate (“embedded systems”), la care existența unui sistem de
+calcul incorporat este transparentă pentru utilizator.
+Printre multele domenii unde utilizarea lor este practic un standard industrial se
+pot menționa: în industria de automobile (controlul aprinderii/motorului, climatizare,
+diagnoză, sisteme de alarmă, etc.), în electronice de consum (sisteme audio,
+televizoare, camere video și videocasetofoane, telefonie mobilă, GPS-uri, jocuri
+electronice etc.), în aparatura electrocasnică (mașini de spălat, frigidere, cuptoare cu
+microunde, aspiratoare), în controlul mediului și climatizare (sere, locuințe, hale
+industriale), în industria aerospațială, în mijloacele moderne de măsurare -
+instrumentație (aparate de măsură, senzori și traductoare inteligente), la realizarea de
+periferice pentru calculatoare, în medicină.
+Ca un exemplu din industria de automobile, unde numai la nivelul anului 1999,
+un BMW seria 7 utiliza 65 de microcontrolere, iar un Mercedes din clasa S utiliza 63 de
+microcontrolere. Practic, deși am prezentat ca exemple concrete numai sisteme robotice
+și mecatronice, este foarte greu de găsit un domeniu de aplicații în care să nu se
+utilizeze microcontrolerele.
+1.6.2 Arhitectura unității centrale
+Arhitectura unității centrale de calcul (CPU) este unul din elementele cele mai
+importante ce trebuie avut în vedere în analiza oricărui sistem de calcul. Principalele
+concepte luate în considerare și întâlnite sunt următoarele:
+Arhitecturi de tip " von Neumann "
+Microcontrolerele bazate pe această arhitectură au o unitate centrală (CPU)
+caracterizată de existenţa unui singur spaţiu de memorie utilizat pentru memorarea atât
+a codului instrucţiunilor cât și a datelor ce fac obiectul prelucrării. Există deci o singură
+magistrală internă (bus) care este folosită pentru preluarea a instrucţiunilor (fetch
+opcod) şi a datelor; efectuarea celor două operaţii separate, în mod secvenţial, are ca
+efect, cel puţin principial, încetinirea operaţiilor. 
+10
+Figura 1.2. Arhitectură de tip " von Neumann "
+Este arhitectura standard (cea mai des întâlnită) și pentru microprocesoarele de
+uz general.
+Arhitecturi de tip " Harvard "
+Arhitectura Harvard este o arhitectură a calculatoarelor caracterizată prin
+stocarea separată a instrucțiunilor și datelor Numele acestei arhitecturi provine de la
+sistemul de calcul Harvard Mark I, ce stoca instrucțiunile pe 24 biți pe o bandă perforată,
+iar datele în contoare electromecanice ce permiteau 23 de cifre.
+Din cauza lungimii cuvintelor, a tehnologiei de implementare și a structurii
+memoriei de adresare diferite, în cadrul acestei arhitecturi nu este necesar ca cele două
+tipuri de memorie (program și date) să dispună de aceleași caracteristici. De regulă
+memoria pentru instrucțiuni are o capacitate mai mare decât cea de date. De exemplu,
+microcontrolerele PIC au un cuvânt de date de 8 biți și o lungime a instrucțiunii de 12,
+14, 16 sau 32 biți.
+În funcție de necesarul de memorie instrucțiunile pot fi stocate de exemplu într-o
+memorie de tip ROM („read-only”), în timp ce datele se află într-o memorie de tip „citirescriere”.
+11
+Figura 1.3. Arhitectură de tip " Harvard "
+În arhitectura von Neumann pură CPU-ul poate fie citi o instrucțiune, fie citi/scrie
+date din/în memorie. Nu pot fi efectuate ambele operațiuni simultan, deoarece se
+folosește aceeași magistrală. Prin contrast, într-un calculator bazat pe arhitectura
+Harvard CPU-ul poate citi o instrucțiune și în același timp poate accesa și date, chiar și
+fără cache. De aceea o arhitectură Harvard poate fi mai rapidă: fetch-urile instrucțiunilor
+și accesul la date nu concurează pentru aceeași cale de transfer de date. Arhitectura
+Harvard are spații de adresare separate pentru date și instrucțiuni: adresa 0 pentru date
+nu este aceeași cu adresa 0 pentru instrucțiuni.
+În perioada modernă arhitectura Harvard este folosită în principal în două tipuri
+de dispozitive:
+ Procesoarele de semnale specializate din cadrul dispozitivelor pentru prelucrarea
+semnalelor audio și/sau video.
+ Microcontrolerele din cadrul aplicațiilor electronice (PIC de la Microchip, AVR de
+la Atmel); acestea dispun de dimensiuni mici ale memoriilor de program și de
+date și se folosesc de avantajul arhitecturii RISC – executarea instrucțiunilor întrun ciclu mașină (nu neapărat un ciclu de ceas).
+Arhitectura de tip CISC
+Aproape toate microcontrolerele au la baza realizării CPU conceptul CISC
+(Complex Instruction Set Computer). Aceasta înseamnă un set uzual de peste 80
+instrucțiuni, multe din ele foarte puternice și specializate.
+12
+Microprocesoarele care utilizează arhitectura CISC au multe instrucțiuni
+încorporate în ele. Acest lucru salvează timp de procesare. Timpul este salvat deoarece
+instrucțiunile necesare sunt disponibile direct din microprocesor și nu este nevoie ca
+acesta sa le preia din programul stocat pe memoria externa, cum ar fi RAM-ul.
+Arhitectura CISC ajuta microprocesorul să grăbească execuția programelor ce
+au nevoie de instrucțiuni. Din cauza instrucțiunilor incorporate in microprocesor,
+performantele acestuia sunt scăzute. Pentru a trece peste aceasta problema trebuie
+incorporate mai multe tranzistoare in microprocesor. Acest tip de procesor este folositor
+pentru nevoi generale de calcul. Este folosit in general in PC-uri.
+Arhitectura de tip RISC
+RISC (Reduced Instruction Set Computer) este un concept de realizare a CPU
+care a început să fie utilizat cu succes de ceva timp și la realizarea microcontrolerelor.
+Microprocesoarele CISC au instrucțiunile incorporate, iar acestea ocupa spațiu
+in microprocesor, lăsând mai puțin spațiu pentru procesul de programare. Unele
+microprocesoare fac anumite funcții, cum ar fi cele folosite pentru calculele științifice.
+Instrucțiunile în plus încorporate în microprocesor ocupa spațiu important și de
+asemenea timpul necesar pentru execuția instrucțiunilor suplimentare este irosit.
+Prin implementarea unui set redus de instrucțiuni care se pot executa foarte
+rapid și eficient, se obține o reducere a complexității microcircuitului, suprafața
+disponibilizată putând fi utilizată în alte scopuri.
+Microprocesoarele ce utilizează arhitectura RISC au instrucțiuni limitate
+incorporate. De aceea este nevoie de mai puține tranzistoare pentru crearea
+microprocesorului. Reducerea instrucțiunilor salvează și spațiu in microprocesor.
+Microprocesorul RISC este mai ieftin de fabricat decât cel CISC. Acest tip de procesor
+este preferat pentru scopuri științifice unde numărul limitat de instrucțiuni este necesar.
+1.6.3 Memoria
+În afară de memoria locală de tip RAM, de dimensiuni relativ reduse (de la x10
+octeţi la x1k), implementată ca atare sau existentă sub forma unui set de registre și
+destinată memorării datelor (variabilelor), mai există o serie de aspecte specifice, marea
+majoritate a acestora fiind legată de implementarea fizică a memoriei de program (şi
+eventual a unei părţi a memoriei de date) cu ajutorul unor memorii nevolatile. Clasic,
+memoria de program era implementată într-o variantă de tip ROM : EPROM pentru
+dezvoltare și producţie pe scară mică/medie sau mask-ROM pentru producţia de masă. 
+13
+Principalele concepte noi, apărute de a lungul timpului în legătură cu
+implementarea memoriei de program sau date sunt urmatoarele:
+ OTP - majoritatea producătorilor oferă variante de microcontrolere la care memoria
+locală de program este de tip OTP (One Time Programmable), practic o memorie
+PROM identică intern cu varianta EPROM, dar fără fereastra de cuarţ pentru
+ştergere (deci şi mai ieftine)
+ FLASH EPROM - este o soluţie mai bună decât EPROM-ul propriu-zis atunci când
+este necesar un volum mare de memorie program (nevolatilă); mai rapidă și cu un
+număr garantat suficient de mare (x10000) de cicluri de programare (de
+ştergere/scriere), este caracterizată şi prin modalităţi mai flexibile de programare;
+este utilizată numai ca memorie de program.
+ EEPROM - multe microcontrolere au şi o memorie de acest tip, de dimensiune
+limitată (de la x10 octeţi la x K octeţi), destinată memorării unui număr limitat de
+parametrii (memorie de date) care eventual trebuie modificaţi din timp în timp; este o
+memorie relativ lentă (la scriere), dar cu un număr de cicluri de ştergere/scriere mai
+mare ca FLASH-ul
+ NOVRAM (RAM nevolatil) - realizat prin alimentarea locală (baterie, acumulator) a
+unui masiv RAM CMOS atunci când este necesar un volum mare de memorie de
+program şi date nevolatilă; mult mai rapidă decât toate celelalte tipuri și fără limitări
+ca număr de cicluri.
+ Memoria externă de program sau date. Marea majoritate a familiilor de
+microcontrolere permit și utilizarea de memorie externă de program (tipic ROM) sau
+date (tipic RAM). Aceasta presupune existenta și utilizarea unor magistrale externe
+de adrese și date. Conexiunile externe necesare pentru acestea sunt disponibile ca
+funcţii alternative ale pinilor. Din păcate, in această situaţie numărul de conexiuni
+exterioare disponibile pentru interfaţa cu exteriorul se reduce dramatic, reducând
+mult din versatilitatea microcontrolerului. Mai mult la variantele constructive cu un
+număr mic de pini (conexiuni externe) nu este posibilă utilizarea de memorie externă,
+decât, eventual, intr-o variantă cu interfaţă serială (memorie RAM, FLASH sau
+EEPROM cu interfaţă I2C, SPI, etc.) și numai ca memorie de date.
+1.6.4 Limbaje de programare
+Limbajul mașină
+Limbajul mașină (instrucțiunile mașină) este singura formă de reprezentare a
+informației pe care un microcontroler o "înțelege". Din păcate această formă de 
+14
+reprezentare a informației este total nepractică pentru un programator, care va utiliza cel
+puțin un limbaj de asamblare, în care o instrucțiune (o mnemonică cu operanzii aferenți)
+are drept corespondent o instrucțiune în limbaj mașină (excepție fac macroinstrucțiunile
+disponibile la unele asambloare). Un program în limbaj de asamblare este rapid și
+compact. Aceasta nu înseamnă că un astfel de program, prost scris, nu poate fi lent și
+de mari dimensiuni, programatorul având controlul total pentru execuția programului și
+gestiunea resurselor. Limbajul de asamblare este primul care trebuie învățat, chiar
+sumar, atunci când dorim să proiectăm o aplicație hard/soft cu un anume microcontroler,
+el permițând înțelegerea arhitecturii acestuia și utilizarea ei eficientă.
+Interpreter
+Un interpreter este o implementare a unui limbaj de nivel înalt, mai apropiat de
+limbajul natural. Este de fapt un program rezident care, în acest caz, rulează pe o
+platformă de calcul de tip microcontroler. Caracteristic pentru execuția unui program
+interpretat, este citirea și executarea secvențială a instrucțiunilor (instrucțiune cu
+instrucțiune). De fapt fiecare instrucțiune de nivel înalt este interpretată într-o secvență
+de instrucțiuni mașină care se execută imediat.
+Compilatoare
+Un compilator combină ușurința în programare oferită de un interpreter (de fapt
+de limbajul de nivel înalt) cu o viteză mai mare de execuție a codului. Pentru aceasta
+programul, în limbaj de nivel înalt, este translatat (tradus) direct în limbaj mașină sau în
+limbaj de asamblare (urmând a fi apoi asamblat). Codul mașină rezultat are dimensiuni
+relativ mari (dar mai mici decât cel interpretat) și este executat direct, ca un tot, de
+microcontroler. De regulă codul generat poate fi optimizat fie ca dimensiune, fie ca timp
+de execuție. Se pot enumera compilatoare pentru limbajele: C, BASIC, Pascal, PL/M
+(Intel), Forth.
+1.6.5. Criterii de alegere a unui microcontroler
+În momentul în care se doreşte alegerea unui microcontroler (sau mai bine zis a
+unei familii de microcontrolere) pentru dezvoltarea unui proiect există mai multe criterii
+ce trebuie luate în considerare, ţinând cont de implicaţiile multiple ale acestei alegeri.
+Câteva din aceste criterii vor fi enumerate in continuare:
+ Costurile aplicaţiei (scara de producţie, costurile microcontrolerului, costurile
+mediului de programare şi dezvoltare
+ Timpul de dezvoltare al aplicaţiei
+ Caracteristicile fizice (viteza de prelucrare (de calcul) necesară, memoria,
+memoria externă, tipul de alimentare disponibilă, numărul de intrări şi/sau ieşiri
+necesare, tipul de intrări şi/sau ieşiri necesare: intrări/ieşiri analogice ș.a.)
+15
+ Conectivitatea (resursele de comunicaţie necesare, tipuri de magistrale seriale,
+conectivitate Ethernet (o stivă TCP/IP), USB sau wireless)
+ Compatibilitate, scalabilitate și dezvoltarea ulterioară (ce tipuri de circuite se pot
+interfaţa cât mai simplu: sisteme de afişare, senzori, elemente de comandă și
+execuţie (relee, motoare de cc, motoare pas cu pas, etc.), resurse periferice sau
+de memorie)
+ Alte aspecte (distribuitori, suport oferit de producător, garanție și calitate a
+produselor)
+Capitolul 2: Medii de programare folosite
+2.1. Android SDK
+Android SDK furnizează librăriile API necesare si unelte pentru dezvoltatori,
+unelte necesare in crearea, testarea si depanarea aplicațiilor pentru Android.
+Unelte necesare dezvoltării de aplicații Android:
+ Eclipse + ADT plugin
+ Android SDK Tools
+ Android Platform-tools
+ Cea mai nouă platformă Android
+ Cea mai noua imagine de sistem Android pentru emulator
+2.1.1. Eclipse SDK 4.2
+Eclipse SDK 4.2 este noua platformă pentru construirea aplicaţiilor “rich client”.
+O platformă “rich client” reprezintă o unealtă pentru programatori, care uşurează
+integrarea componentelor software independente, unde cea mai mare parte a zonei de
+procesare a datelor se desfăşoară la client. Astfel că, această nouă platformă vine în
+ajutorul programatorilor, pentru a dezvolta şi asambla aplicaţiile bazate pe Eclipse.
+Versiunea 4.2 este pregătită pentru producţie, atât pentru dezvoltatori, cât şi pentru
+utilizatorii finali.
+16
+2.1.1. Ce este nou in v4.2
+Noua platformă Eclipse 4.2 aduce modificări, atât din punct de vedere client, cât
+şi pentru dezvoltatori:
+ un model de interfaţă orientată pe utilizator şi un nou CSS axat pe mecanismul de
+declarare a formatului aplicaţiilor. Aceste facilităţi uşurează munca pe partea de
+proiectare şi personalizare a unei interfeţe pentru utilizatori;
+ de asemenea, o flexibilitate mai mare la aspectul interfeţei , expunând diferenţe
+vizibile între interfaţa de utilizator şi cea pentru dezvoltatori;
+ un nou model de programare orientat pe servicii, care uşurează folosirea într-un mod
+discret a serviciilor aplicaţiilor pe platforma Eclipse;
+ apariţie modernă pentru zona de lucru;
+ compatibilitate integrală binar cu API, pentru care s-a realizat cu uşurintă procesul de
+migrare
+2.1.2. Ce este Eclipse şi Organizaţia Eclipse?
+Eclipse este o comunitate, atât pentru persoane fizice, cât şi pentru organizaţii,
+care îşi doresc să colaboreze cu un software open source, comercial şi prietenos.
+Proiectele sale sunt focusate pe construirea unei platforme deschise de dezvoltare
+alcătuită de framework-uri extensibile, tool-uri şi timpi de rulare pentru construirea,
+lansarea şi coordonarea software-ului de-a lungul ciclului său de viaţă. Fundaţia Eclipse
+este non-profit, fundaţie susţinută de membrii care hostează proiectele Eclipse şi ajută
+la cultivarea unei comunităţi open source, dar şi la un ecosistem de produse şi servicii
+complementare.
+Proiectul Eclipse a fost original creat de IBM, în noiembrie 2001 şi suportat de
+un grup de dezvoltatori software. Fundaţia Eclipse a fost creată în ianuarie 2004, ca o
+corporaţie independentă, fără profit, pentru a acţiona ca un administrator pentru
+comunitatea Eclipse. Corporaţia a fost creată pentru a permite unui dezvoltator neutru şi
+deschis, accesul la o comunitate transparentă. Astăzi, comunitatea cuprinde persoane
+fizice şi organizaţii, dintr-o anumită secţiune a industriei software.
+Fundaţia Eclipse este finanţată anual, prin intermediul membrilor săi şi condusă
+de Consiliul de Administraţie. Dezvoltatorii şi Consumatorii strategici au şi ei un loc în
+acest Consiliu. Organizaţia angajează profesionişti full-time pentru a furniza servicii
+comunităţii, dar nu angajează dezvoltatori open-source, care lucrează la proiectele
+Eclipse. Aceştia din urmă sunt angajaţi tipici ai unor organizaţii sau dezvoltatori
+independenţi, care oferă din timpul lor pentru a lucra pe un proiect open source.
+17
+În general, Fundaţia Eclipse furnizează patru servicii comunităţii Eclipse:
+1) Infrastructura IT
+2) Management IP
+3) Procesul de dezvoltare
+4) Dezvoltare ecosistem
+Staff-ul full-time este asociat fiecărei arii enumerate anterior şi lucrează cu cea
+mai grozavă comunitate Eclipse, pentru a asista în şedinţe la nevoile părţilor interesate.
+1. Infrastructura IT
+Organizaţia Eclipse administrează infrastructura IT pentru comunitatea Eclipse
+open source, incluzând zona de cod GIT, bazele de date Bugyilla, listele de mail-uri şi
+forumuri cu referire la orientarea dezvoltării, download-ul şi site-ul web. Infrastructura
+este implementată să furnizeze un serviciu sigur şi scalabil pentru dezvoltatorii
+tehnologiei Eclipse şi pentru consumatorii, care folosesc această tehnologie.
+2. Management-ul zonei de intelect (IP)
+Un aspect important pentru Eclipse este focalizarea pe activarea folosirii
+tehnologiei open source, în produsele şi serviciile software comerciale. Se promovează
+şi încurajează în mod conştient dezvoltatorii software în utilizarea tehnologiei Eclipse,
+pentru construirea de produse şi servicii software comerciale. Acst lucru este posibil de
+faptul că toate proiectele Eclipse sunt licenţiate sub numele de Licenţă Publică Eclipse
+(EPL).
+Fundaţia Eclipse întreprinde de asemenea un număr de paşi pentru a încerca
+asigurarea originalităţii proiectelor Eclipse. Primul pas în acest proces constă în
+protejarea tuturor contribuţiilor, că sunt realizate de titularul potrivit, sub licenţa publică
+Eclipse. Tuturor dezvoltatorilor li se cere să semneze un acord, care stipulează că toată
+contribuţia lor este originală şi că este contribuită sub EPL. Dacă un dezvoltator este
+sponsorizat să lucreze la un proiect Eclipse, de un membru al organizaţiei, atunci
+organizaţia trebuie să semneze un acord de membru dezvoltator.
+Al doilea pas face referire la asocierea codului sursă dezvoltat în afara
+procesului Eclipse, care este procesat prin procesul de aprobare IP al fundaţiei Eclipse.
+Acest proces constă în analiza codului selectat, pentru a încerca constatarea
+provenienţei codului şi compatibilitatea licenţei cu EPL. Proiectele care nu se
+încadrează în aceste standarde nu sunt adăugate la proiectul Eclipse. Rezultatul final
+ţine de un nivel de încredere, în funcţie de care proiectele Eclipse open source sunt
+distribuite în produsele comerciale.
+18
+3. Dezvoltarea comunităţii de suport
+Comunitatea Eclipse are o buna reputaţie dobândită în urma furnizării softwareului de calitate, într-un mod sigur şi predictibil. Acest lucru se datorează angajamentelor
+celor implicaţi şi a organizaţiilor care contribuie la proiectele open source. De asemenea,
+fundaţia Eclipse furnizează, atât servicii cât şi suport proiectelor, pentru a-i ajuta să-şi
+atingă aceste obiective.
+Angajaţii fundaţiei contribuie la implementarea procesului de dezvoltare Eclipse.
+Acest proces asistă la începerea fiecărui proiect şi asigură pentru toate proiectele o
+desfăşurare într-o manieră transparentă. Ca parte a acestui proces, Fundaţia
+organizează examinări ale proiectelor, pentru membrii comunităţii pentru asigurarea unei
+interacţiuni consistente între proiecte şi parteneriate.
+Comunitatea Eclipse organizează anual un rând de versiuni, ce oferă versiuni
+coordonate ale proiectelor Eclipse, care doresc să participe. Acest lucru ajută utilizatorii
+să adopte noi versiuni ale proiectelor deoarece:
+1) Toate proiectele sunt disponibile pe aceeaşi planificare, astfel încât nu va trebui
+să se aştepte după planificarea independentă a proiectelor;
+2) Un nivel de integrare a testării apare înainte ca versiunea finală să ajute la
+identificarea problemelor de-a lungul proiectului.
+4. Dezvoltarea ecosistemului
+Un aspect unic al comunităţii Eclipse şi rolul fundaţiei este marketing-ul activ şi
+promovarea proiectelor Eclipse, dar şi lărgirea ecosistemului. Un ecosistem vibrant şi
+sănătos care se extinde dincolo de comunitatea Eclipse, pentru a include lucruri precum
+produs comerciale bazate pe Eclipse, alte proiecte open source ce utilizează Eclipse,
+training şi furnizori de servicii, magazineşi portal online, cărţi etc, toate acestea fiind
+cheia succesului pentru comunitatea Eclipse.
+Pentru a lua parte la dezvoltarea ecosistemului Eclipse, fundaţia organizează un
+număr de activităţi, incluzând evenimente de marketing cu membrii ale companiilor,
+conferinţe ale comunităţii, cataloage online de resurse (Eclipse marketplace şi canalul
+de Youtube Eclipse), de două ori pe an întâlniri ale membrilor şi alte programe pentru
+promovarea întregii comunităţi Eclipse.
+2.1.3. Un model unic pentru dezvoltarea open source
+Fundaţia Eclipse a fost recunoscută pentru oferirea de proiecte open source şi
+pentru comunitatea Eclipse. Pentru o corporaţie non-profit, fundaţia şi modelul de 
+19
+conducere Eclipse se asigură că nicio entitate nu conduce strategia, politicile sau
+operaţiile comunităţii Eclipse.
+Fundaţia este focusată pe crearea unui mediu pentru proiectele open source de
+succes şi să promoveze adoptarea tehnologiei Eclipse în soluţiile comerciale şi open
+source. Prin intermediul serviciilor precum IP Due Diligence, versiuni anuale, suportul
+comunităţii de dezvoltare şi dezvoltarea ecosistemului, modelul Eclipse cu privire la
+dezvoltarea open source este unică şi dovedită pentru acest tip de dezvoltare.
+2.1.4. Istoria Eclipse
+Liderii industriei de la Borland, IBM, MERANT, QNX Software Systems, Rational
+Software, Red Hat, SuSE, TogetherSoft şi Webgain au format iniţial comitetul Stewards
+eclipse.org, în noiembrie 2001. Până la sfârşitul anului 2003, acest consorţiu a crescut
+la peste 80 de membrii.
+La 2 februarie 2004, comitetul Stewards a anunţat reorganizarea Eclipse într-o
+corporaţie non-profit. În primă fază s-a format un consorţiu, când IBM a transformat
+platforma Eclipse în open source, Eclipse a devenit un produs independent, care va
+conduce evoluţia platformei pentru a avantaja furnizorii de dezvoltare software şi a
+utilizatorilor finali. Toată tehnologia şi codul sursă furnizat şi dezvoltat de această rapidă
+comunitate sunt disponibile prin EPL.
+Fondatorii dezvoltatori ai strategiei şi consumatorii strategici au fost Ericsson,
+HP, IBM, Intel, MontaVista Software, QNX, SAP şi Serena Software.
+2.1.5. Android Developer Tools (ADT) plugin
+Android Development Tools (ADT) este un plugin creat pentru Eclipse IDE, si
+oferă mediu integrat si puternic pentru a crea aplicații pentru Android.
+ADT extinde capabilitățile mediului Eclipse pentru a-ti permite sa creezi aplicații
+Android, să creezi propria interfață, să poți adăuga pachete bazate pe API Android
+Framework. Poți de asemenea depana aplicațiile create folosind uneltele Android SDK,
+poți exporta aplicații semnate sau nu.
+Dezvoltarea aplicațiilor in Eclipse cu ADT este metoda recomandă deoarece
+aceasta este cea mai ușoară metodă de a porni. Dispuneți de ghidul de început, unelte
+integrate, editor XML, si depanare, astfel cu ADT aveți parte de un control incredibil și
+un avânt considerabil in dezvoltarea de aplicații Android.
+20
+2.2. Arduino
+Arduino este un mediu de dezvoltare open source ce oferă mijloace foarte
+rapide de a scrie codul sursă și încărca cu ușurința pe placă. Acesta este compatibil cu
+Windows, Mac OS X, și Linux. Mediul de dezvoltare este scris in Java si are la bază
+Processing, avr-gcc, și alte programe open source.
+2.2.1. Mediul de dezvoltare Arduino
+Mediul de dezvoltare Arduino, include editor de text pentru a scrie cod, o zonă
+de mesaje, o consola de text, bara cu butoane si funcții comune, si o serie de meniuri.
+Se conectează la placa fizică Arduino pentru a încărca programele și pentru a comunica
+cu acestea.
+Programele scrise pentru Arduino se numesc schițe(sketches). Acestea sunt
+scrise in editorul de text. Schițele sunt salvate cu extensia .ino. Oferă facilități pentru
+copiere/lipire și pentru căutare/înlocuire text. Zona de mesaje oferă informații in timp real
+legate de erori, salvări si exporturi.
+Arduino IDE conține librării. Acestea furnizează funcționalitate extinsă pentru a fi
+folosită in schițe. Pentru a folosi librarii in schițe, le puteți selecta din meniul Sketch-
+>Import Library. Această operațiune va insera încă o declarație #include in partea de
+sus a programului, iar librăria va fi compilată odată cu schița.
+O unealtă folositoare oferita de acest IDE este Serial Monitor. Acesta afișează
+datele trimise de la placa Arduino. Iar pentru a trimite date către placa este suficient sa
+scrii comanda si sa apeși butonul "send". Rata de transmitere a datelor poate fi
+selectată dintr-o listă derulantă, aceasta trebuie sa coincidă cu rata transmisă de funcția
+Serial.begin in program.
+Limbajul de programare folosit este C++, la care sunt adăugate foarte multe
+funcții, implementate pentru a ușura interfațarea cu microcontrolerele Atmel.
+21
+Capitolul 3: Bluetooth
+3.1. Ce reprezintă Bluetooth ?
+Bluetooth este un standard care elimină firele şi cablurile între dispozitive atât
+staţionare cât şi mobile, facilitând atât comunicaţiile de date cât şi pe cele vocale. Oferă
+posibilitatea implementării unor reţele ad-hoc și a sincronizării între diverse dispozitive.
+Tehnologia wireless Bluetooth implică atât cerinţe hard cât și soft și de
+interoperabilitate. Aceasta a fost adoptată de majoritatea actorilor de pe scena
+telecomunicaţiilor, computerelor și mecatronicii, dar și din diverse domenii precum cel
+bancar, cel al industriei auto-moto și de îngrijire a sănătăţii sau cel al automatizării şi
+jucăriilor, etc. – pe plan extern, aproape de toate sectoarele economice.
+3.1.1. Istorie
+Harald Bluetooth a fost regele viking al Danemarcei între anii 940 şi 981. Unul
+dintre scopurile sale era să determine oamenii să comunice între ei şi în timpul domniei
+sale Danemarca și Norvegia au fost unite.
+Astăzi tehnologia wireless Bluetooth îngăduie oamenilor să comunice între ei,
+dar de această dată prin intermediul unei legături radio de cost redus şi pe domenii
+restrânse. În oraşul danez Jelling Harald Bluetooth a ridicat o piatră pictată, pe care
+alături de imaginea lui Cristos, dăinuie şi astăzi următoarea inscripţie: „Regele Harald a
+ridicat acest monument în memoria tatălui său Gorm și a mamei sale Thyre. Acest
+Harald a cucerit în întregime Danemarca și Norvegia și i-a creştinat pe danezi”.
+SIG
+În februarie 1998 a luat fiinţă Grupul de Interes Special (SIG). Astăzi Bluetooth
+SIG include companiile promotoare 3Com, Ericsson, IBM, Intel, Lucent, Microsoft,
+Motorola, Nokia şi Toshiba, şi mii de companii – membri asociaţi sau adoptori. Iniţial
+misiunea SIG a fost de a monitoriza dezvoltarea tehnologiei radio pentru domenii
+restrânse și de a crea un standard global deschis, prevenind astfel devenirea acestei
+tehnologii proprietatea unei singure companii. Acest lucru a avut ca rezultat apariţia
+primelor Specificaţii Bluetooth în Iulie 1999. Dezvoltarea ulterioară a specificaţiilor este
+încă scopul principal al SIG, alături de asigurarea cerinţelor de interoperabilitate,
+armonizarea benzii de frecvenţă şi promoţia tehnologiei.
+22
+3.1.2. Implementare
+Tehnologia Bluetooth operează in gama de frecvența 2400–2483.5 MHz pentru
+comunicațiile globale nelicențiate, iar pe frecvența 2.4 GHz (unde radio de frecvența
+scurtă) pentru domeniul Științific și Medical (ISM). Bluetooth folosește tehnologia numita
+„frequency-hopping spread spectrum”. Datele transmise sunt împărțite in pachete, iar
+fiecare din acestea este transmis pe unul din cele 79 de canale Bluetooth desemnate.
+Fiecare canal are o lungime de banda de 1MHz. Primul canal începe la 2402MHz și se
+continuă pana la 2480MHz cu pasul de 1MHz.
+Inițial singura schema de modulare era Gaussian frequency-shift keying
+(GFSK), însa după introducerea standardului Bluetooth 2.0+EDR, se mai puteau folosi
+și π/4-DQPSK sau 8DPSK intre dispozitivele compatibile. Dispozitivele ce folosesc
+tehnica de modulare GFSK operează in modul de bază, iar viteza de transfer este pană
+la 1Mbit/s. Termenul Enhanced Data Rate (EDR) este folosit pentru a descrie π/4-
+DQPSK și 8DPSK, acestea oferind viteze de transfer pana la 2 respectiv 3Mbit/s.
+Bluetooth este un protocol bazat pe pachete cu o structura de tipul masterslave. Un dispozitiv master poate comunica cu pana la 7 dispozitive slave; toate
+dispozitivele sunt sincronizate cu frecvența de ceas a celui master.
+Tehnologia Bluetooth oferă o cale securizată de schimb de fișiere intre
+dispozitive precum telefoane mobile, laptop-uri, calculatoare personale, imprimante, ș.a.
+Acesta a fost construit, in principal, ca și tehnologie cu o lățime de banda mica.
+3.2. Versiuni de Bluetooth
+ Bluetooth 1.0 și 1.0B - Versiunile 1.0 și 1.0B au avut multe probleme tehnice, și
+producătorii au întâmpinat probleme in special în încercarea acestora de a face
+dispozitivele interoperabile.
+ Bluetooth 1.1 - Multe din erorile găsite la versiunea 1.0B au fost reparate, s-a oferit
+suport pentru canale necriptate și a fost adăugat un indicator al puterii semnalului de
+transmisie
+ Bluetooth 1.2 - Aceasta versiune este compatibilă cu 1.1. Viteza practică a
+transmisiei de date a fost mărită la 721 kbps
+ Bluetooth 2.0 - Această versiune este compatibilă înapoi cu versiunile 1.x. Principala
+îmbunătățire este introducerea unei viteze de transmisie mai mari numite Enhanced
+Data Rate, care permite o viteză de 3,2 Mbit/s. Îmbunătățirea a creat următoarele
+efecte: viteza de transmisie de 3 ori mai mare; consum de energie mai mic; rata
+erorilor de transmisie (BER - bit error rate) mai scăzută.
+ Bluetooth v3.0 - Versiunea 3.0 a fost adoptată de către Bluetooth SIG în data de 21
+Aprilie 2009. Bluetooth 3.0 îmbunătățește viteza de transfer teoretică până la 24
+Mbit/s. Saltul vitezei a fost posibilă datorită introducerii unei legături 802.11. Vitezele 
+23
+îmbunătățite nu pot fi prezente și în cadrul unei conexiuni cu un standard mai vechi
+datorită lipsei legăturii 802.11 în dispozitivele de generație mai veche.
+ Bluetooth v4.0 - Versiunea 4.0 a fost adoptată de către Bluetooth SIG în data de 30
+Iunie 2010. Aceasta include protocoalele Bluetooth clasic, de mare viteza și cu un
+consum scăzut de energie. Protocoalele de mare viteză sunt bazate pe Wi-Fi, iar
+protocoalele clasice sunt moștenite de la versiunile anterioare. Bluetooth low energy
+(BLE), cunoscut ca WiBee este un subset al Bluetooth v4.0 cu o noua stiva de
+protocoale pentru construire rapida a legăturilor simple.
+3.3. Utilizarea Bluetooth
+O caracteristică a tehnologiei Bluetooth este aceea de a permite dispozitivelor
+fabricate de diverşi producători să poată comunica intre ele. Astfel, Bluetooth defineşte
+atât un sistem Radio, cât și o stivă de protocoale pentru ca aplicaţiile să poată sesiza
+prezenţa altor dispozitive Bluetooth, și să descopere ce servicii pot acestea oferi şi să le
+utilizeze.
+3.3.1. Stiva de protocoale
+Stiva de protocoale este definită ca o serie de straturi, deşi unele caracteristici nu pot fi
+delimitate ca aparţinând unui anumit strat. 
+24
+Figura 3.1. Stiva de protocoale Bluetooth
+Profilurile Bluetooth ghidează aplicaţiile în utilizarea stivei de protocoale
+Bluetooth.
+ TCS (Telephony Control Protocol Specification) oferă servicii telefonice.
+ SDP (Service Discovery Protocol) lasă dispozitivele Bluetooth să descopere ce
+servicii suportă celelalte dispozitive.
+ RFCOMM oferă o interfaţă serială asemănătoare cu RS232.
+ L2CAP multiplexează date de la straturile superioare şi converteşte dimensiunile
+pachetelor informaţionale, după necesităţi.
+ HCI manipulează comunicaţiile între modulul Bluetooth și aplicaţia gazdă.
+ LM controlează și configurează legăturile cu alte dispozitive.
+ BB/LC controlează legăturile fizice prin radio, asamblează pachetele și controlează
+salturile în frecvenţă.
+ Stratul Radio modulează și demodulează datele pentru transmisia și recepţia
+aeriană.
+25
+3.3.2. Legăturile vocale şi de date
+Bluetooth permite atât comunicaţii de date critice în timp, precum cele vocale și
+audio, cât și comunicaţii de înaltă viteză, de pachete de date, insensibile la factorul timp.
+Pentru a transporta astfel de date, între orice două dispozitive se pot stabili două tipuri
+de legături și anume, legături SCO (Synchronous Connection Oriented) pentru
+comunicaţii vocale și legături ACL (Asynchronous Connectionless) pentru comunicaţii de
+date.
+Pachetele de date pentru legături ACL sunt construite dintr-un cod de acces de
+72 biţi, un pachet antet (header) de 54 biţi și un cod CRC, în adiţia încărcăturii
+informaţionale utile (payload data). Există o varietate de tipuri de date permiţând
+transmiterea unor cantităţi diferite de informaţie. Pachetul cu cea mai mare încărcătură
+informaţională este DH5, care se întinde în 5 slot-uri temporale. Un pachet DH5 poate
+transporta 339 bytes sau 2712 biţi de date. Aşadar, sunt transmişi 2858 biţi pentru 2712
+biţi de informaţie.
+Un pachet DH5 utilizează până la 5 slot-uri și lungimea minimă replicată este 1
+slot. Astfel, rata maximă în banda de bază într-un sens este 723.2kb/s. În acest caz, cu
+pachete de 5 slot-uri transmise într-un sens, pachetele de un slot trimise în sens invers
+vor transporta numai 57.6kb/s, astfel că aceasta va fi o legătură asimetrică cu mai multă
+informaţie transmisă în sensul trimiterii pachetelor de 5 slot-uri. Dacă ar fi transmise
+pachete de 5 slot-uri în ambele sensuri, atunci rata obţinută a datelor ar fi 433.9kb/s,
+ceea ce ar fi o reducere prea mare de la rata de transmisie prin aer de 1Mb/s.
+Atât aceste supraîncărcări la codarea datelor, cât şi salturile în frecvenţă sunt
+necesare în principal pentru a oferi robusteţe legăturii Bluetooth, de vreme ce banda
+ISM este o resursă comună pentru multe dispozitive și alte standarde de comunicaţii şi
+chiar surse de zgomot. În plus, pentru reducerea problemelor de interferenţe viitoare în
+spectru, se au în vedere reglementări de limitare a puterii emise pe unitatea de timp în
+banda ISM, determinând necesitatea unei scheme de salturi în frecvenţă pentru
+împrăştierea transmisiilor în spectru și în timp.
+Straturile superioare ale stivei de protocoale mai necesită și ele o parte a lăţimii
+de bandă, astfel că la nivelul aplicaţiilor, rata maximă a datelor poate ajunge la 650kb/s.
+Legăturile SCO lucrează la 64kb/s şi este posibilă coexistenţa a trei legături vocale
+duplex simultane sau combinarea transmisiei vocale cu una de date. Aceste canale
+vocale redau o comunicaţie de o calitate ce se aşteaptă și de la sistemele moderne de
+telefonie mobilă, precum GSM-ul. În fapt, legăturile SCO nu prea sunt potrivite pentru
+transferuri audio de calitatea semnalului muzical. 
+26
+O alternativă pentru suportul transmisiilor muzicale este utilizarea unui canal
+ACL. Calitatea semnalului audio CD brut necesită 1411.2kb/s, dar cu o compresie
+adecvată, precum MP3, care poate reduce rata de bit la aproximativ 128kb/s, se poate
+transmite și semnal audio de calitate apropiată de cea CD, menţinându-se succesiunea
+temporală a informaţiei.
+3.4. Comunicaţia Bluetooth
+Bluetooth diferă de orice reţea cablată, deoarece nu există nici un cablu între
+dispozitivele care comunică între ele și s-ar putea ca ele să nu cunoască cu ce alte
+dispozitive comunică și care sunt capabilităţile acelora. Pentru a rezolva această dilemă,
+Bluetooth utilizează mecanismele Inquiry și Paging și SDP (Service Discovery
+Protocol).
+3.4.1. Descoperirea dispozitivelor Bluetooth
+Presupunem că avem de-a face cu două dispozitive echipate Bluetooth. Primul
+pas în stabilirea unei conexiuni, pentru primul dispozitiv, este de a afla ce dispozitive
+Bluetooth se află în zonă, aşa că acesta iniţiază o procedură Inquiry pentru a sonda
+vecinătatea cu alte dispozitive.
+Pentru aceasta, un dispozitiv transmite o serie de pachete de interogare
+(inquiry) și eventual celălalt va răspunde cu un pachet FHS (Frequency Hop
+Synchronisation). Pachetul FHS conţine toate informaţiile de care un dispozitiv are
+nevoie pentru crearea unei legături cu celălalt. Acesta conţine de asemenea și informaţii
+despre clasa dispozitivului, informaţii structurate pe două nivele: părţi majore (a fost
+descoperit un telefon) şi părţi minore (telefonul descoperit este un telefon celular).
+3.4.2. Conectarea la o bază de date Service Discovery
+Pentru a afla dacă un dispozitiv suportă un serviciu anume, aplicaţia necesită
+conectarea dispozitivului şi utilizarea SDP. Mai întâi, un dispozitiv (laptop) trimite un
+mesaj de paging altuia (telefon mobil), utilizând informaţia adunată prin inquiry. Dacă
+telefonul scanează mesajele de paging, atunci răspunde şi între cele două dispozitive se
+poate seta o conexiune ACL la nivelul benzii de bază pentru transferul de date.
+Odată stabilită o conexiune ACL, poate fi realizată conexiunea la nivelului
+protocolului L2CAP. O conexiune L2CAP este utilizată de fiecare dată când are loc un
+transfer de date între dispozitive Bluetooth. L2CAP permite mai multor protocoale şi
+servicii să utilizeze o singură legătură ACL în banda de bază, iar pentru a face
+deosebirea între acestea, adaugă fiecărui pachet L2CAP o componentă PSM (Protocol
+and Service Multiplexor sau Protocol Stack Multiplexor). PSM diferă pentru fiecare
+protocol și serviciu care utilizează legătura. În cazul considerat, de vreme ce conexiunea
+va fi utilizată pentru descoperirea de servicii, se foloseşte o valoare specială pentru
+acest tip de legătură, şi anume PSM=0x001.
+27
+3.4.3. Conectarea la un serviciu Bluetooth
+Procesul de Paging care duce la stabilirea unei conexiuni ACL în banda de bază
+(BB) este identic celui pentru conectarea în vederea descoperirii serviciilor.
+De această dată, legătura se setează (stabileşte) pentru un protocol care s-ar
+putea să aibă pretenţii la o anumită calitate a serviciului, astfel că aplicaţia ce rulează pe
+laptop poate dori configurarea legăturii în vederea satisfacerii acestor cerinţe. Pentru
+aceasta, aplicaţia trimite cerinţele sale către modulul Bluetooth, utilizând HCI (Host
+Controller Interface). La pasul următor, managerul legăturii (LM) configurează legătura
+utilizând LMP (Link Manager Protocol).
+Odată stabilită conexiunea ACL după dorinţa laptop-ului, se stabileşte o legătură
+L2CAP (Logical Link Control and Adaptation).
+3.4.4. Moduri de descoperire și conectare
+Este foarte important de reţinut că pentru stabilirea unei conexiuni prin
+tehnologia wireless Bluetooth condiţia principală este ca ambele terminale să dorească
+realizarea acestei legături. Unele dispozitive pot fi setate să nu realizeze scanări pentru
+mesaje Inquiry; în acest caz, celelalte dispozitive nu le pot descoperi şi vor fi practic
+invizibile. În mod similar, unele dispozitive pot fi setate să nu realizeze scanări pentru
+mesaje Page; în acest caz, aceste dispozitive pot iniţia legături, dar nu vor auzi
+încercările altor dispozitive de a se conecta la ele.
+Aplicaţiile pot alege dacă să facă dispozitivele conectabile sau descoperibile. O
+conexiune nu poate fi realizată forţat cu un dispozitiv care nu este setat pentru a o
+accepta.
+3.5. Stiva de protocoale Bluetooth
+3.5.1. Protocoale utilizate de Bluetooth
+Asemeni modelului OSI, specificaţiile Bluetooth fac uz de soluţia ierarhizării pe
+nivele a arhitecturii de protocoale. și tot asemeni OSI, scopul final al specificaţiilor
+Bluetooth este de a permite interoperabilitatea aplicaţiilor realizate conform acestor
+specificaţii. Acest lucru se realizează atunci când aplicaţiile din dispozitivele conectate
+rulează utilizând protocoale identice. Stive diferite de protocoale sunt utilizate pentru
+aplicaţii diferite. Independent de aplicaţie, stiva de protocoale utilizate foloseşte un nivel
+Bluetooth fizic şi legătură de date comun.
+28
+Figura 3.2. Protocoale utilizate de Bluetooth
+O aplicaţie nu utilizează toate protocoalele din stivă; în schimb, urmează una
+dintre căile vertical, conform necesităţilor serviciului corespunzător aplicaţiei. Stiva
+completă de protocoale conţine atât protocoale ce sunt specifice tehnologiei wireless
+Bluetooth, precum LMP și L2CAP, şi acele protocoale, precum OBEX (Object Exchange
+Protocol), UDP (User Datagram Protocol) și WAP (Wireless Application Protocol), care
+pot fi folosite pentru comunicaţii cu alte platforme. În Stiva de protocoale Bluetooth
+proiectarea protocoalelor Bluetooth s-a preferat reutilizarea unor protocoale deja
+existente pentru scopuri diferite, la nivele mai înalte.
+Deschiderea specificaţiilor Bluetooth permite multor aplicaţii deja dezvoltate de
+producători să profite de sistemele hard și soft compatibile cu aceste specificaţii. De
+asemenea, producătorii pot implementa protocoale pentru aplicaţiile lor proprii
+(proprietare) sau de uz comun, având la bază specificaţiile referitoare la protocoalele
+tehnologiei wireless Bluetooth.
+Stiva de protocoale utilizate de Bluetooth este structurată pe patru nivele:
+ Protocoalele nivelului Bluetooth:
+o Baseband
+o Link Management Protocol (LMP)
+o Logical Link Control and Adaptation Layer (L2CAP)
+o Service Discovery Protocol (SDP)
+29
+ Protocol de înlocuire a cablurilor:
+o Radio Frequency Communication (RFCOMM)
+ Protocoale de control telefonic:
+o Telephony Control Specification Binary (TCS BIN)
+o AT – comenzi
+ Protocoale Adoptate:
+o Point to Point Protocol (PPP)
+o UDP/TCP/IP
+o OBEX
+o WAP
+o vCard
+o vCalendar
+o Infrared Mobile Communication (IrMC)
+o Wireless Application Environment (WAE)
+Specificaţiile Bluetooth definesc de asemenea o interfaţă HCI (Host Controller
+Interface), care oferă interfaţare cu controller-ul BB şi cu LM şi accesează starea
+hardware-ului şi a registrelor de control. În figura 3.1, HCI este poziţionată sub L2CAP,
+dar ea poate la fel de bine exista și deasupra acestuia.
+Împreună, nivelul de Înlocuire a Cablurilor, nivelul de Control Telefonic şi nivelul
+Protocoale Adoptate formează protocoalele orientate aplicaţie, care permit aplicaţiilor să
+ruleze peste protocoalele nucleului Bluetooth. Ţinând cont că specificaţiile Bluetooth sun
+nişte specificaţii deschise, protocoale adiţionale precum HTTP(HyperText Transfer
+Protocol) ş FTP (File Transfer Protocol) pot fi adăugate într-o manieră interoperabilă
+deasupra protocoalelor de transport Bluetooth sau deasupra protocoalelor orientate
+aplicaţie.
+3.5.2. Protocoale ale Nucleului Bluetooth
+Aceste protocoale sunt specifice tehnologiei wireless Bluetooth, dezvoltate de
+Bluetooth SIG. RFCOMM și TCS BIN au fost dezvoltate tot de către Bluetooth SIG, dar
+acestea se bazează pe standarde deja existente: ETSI TS 07.10 şi Recomandarea ITUT Q.931. Protocoalele nucleului Bluetooth plus nivelul radio sunt cerute de aproape
+toate dispozitivele Bluetooth, în timp ce restul protocoalelor sunt utilizate doar la nevoie.
+ Baseband (BB) - Nivelul benzii de bază (baseband - BB) permite legătura fizică RF
+între unităţi Bluetooth ale unei pico-reţele. De vreme ce sistemele RF Bluetooth
+utilizează tehnologia cu spectru extins şi salt în frecvenţă, în care pachetele sunt
+transmise în fante temporale pe anumite frecvenţe, acest nivel utilizează proceduri
+Inquiry și Page pentru sincronizarea transmisiei cu salturi în frecvenţă şi a clockurilor diferitelor dispozitive Bluetooth. 
+30
+ Link Manager Protocol (LMP) - LMP este responsabil de stabilirea (setarea) şi
+controlul legăturii între dispozitivele Bluetooth, incluzând controlul și negocierea
+dimensiunilor pachetelor din banda de bază. Mai este de asemenea utilizat și în
+procedurile de securizare: autentificare și criptare. LMP controlează de asemenea
+modurile energetice și ciclurile de lucru ale dispozitivelor radio Bluetooth și stările
+conexiunilor unei unităţi Bluetooth într-o picoreţea. Mesajele LMP sunt filtrate și
+interpretate de LM la recepţie, astfel că ele nu sunt niciodată transmise nivelelor
+superioare. Mesajele LMP au prioritate în faţa datelor utilizatorului. Astfel că, dacă
+LM necesită transmiterea unui mesaj, acesta nu va fi întârziat din cauza traficului
+L2CAP.
+ Logical Link Control and Adaptation Protocol (L2CAP) - L2CAP suportă pentru
+protocoalele superioare proceduri de multiplexare, de segmentare și reasamblare a
+pachetelor și de control a calităţii serviciilor (Quality of Service – QoS). L2CAP
+permite protocoalelor şi aplicaţiilor de nivel superior să transmită și să primească
+pachete de date de până la 64 kbytes lungime. Deşi protocolul pentru BB oferă atât
+legături SCO cât și ACL, L2CAP este definit doar pentru legături ACL şi nici nu este
+prevăzut vreun fel de suport pentru legături SCO. Canalele audio de calitate vocală,
+pentru aplicaţiile de telefonie şi audio, sunt manipulate prin legături SCO în banda de
+bază. Oricum, informaţiile audio pot fi împachetate și trimise şi utilizând protocoale
+de comunicaţie prin legături la nivelul L2CAP.
+ Service Discovery Protocol (SDP) - Descoperirea de servicii este un element
+important în cadrul de lucru Bluetooth, deoarece SD stă la baza tuturor modelelor de
+utilizare. Cu ajutorul SDP, informaţiile despre dispozitive, servicii şi caracteristici ale
+dispozitivelor pot fi tabelate în liste, cu ajutorul cărora utilizatorul, cunoscând astfel
+serviciile dispozitivelor din vecinătate, poate selecta între aceste servicii. După
+aceasta, se pot stabili conexiuni cu unul sau mai multe dispozitive Bluetooth.
+31
+Capitolul 4: Proiectarea și implementarea sistemului
+ 4.1. Prezentarea și obiectivele sistemului
+Lucrarea de fața descrie modul in care se poate realiza un robot mobil autonom,
+pas cu pas.
+Ca și punct de plecare am dorit ca robotul sa respecte următoarele cerințe:
+ Să fie autonom
+ Să poată avea mai multe regimuri de funcționare
+ Să poată comunica cu alte dispozitive folosind o conexiune fără fir
+ Să aibă costuri de implementare scăzute
+ Să fie modular
+Astfel am construit un robot ce se poate deplasa autonom, ocolind obstacolele ce
+poate comunica prin intermediul tehnologiei Bluetooth cu un dispozitiv pe care rulează
+Sistemul de Operare Android. Am creat mai multe regimuri de funcționare folosind
+diverși algoritmi printre care și algoritmul de reglare PID.
+Componentele folosite au fost selecționate ca și un compromis intre
+calitatea/precizia oferita și prețul cerut. Am ales ca și platforma de dezvoltare placa
+Arduino UNO, deoarece pentru un preț scăzut oferă o putere de procesare suficienta
+pentru lucrarea de fata, o memorie integrata pe care am putut memora programul și un
+număr decent de porturi I/O atât digitale cat și analogice. Arduino este un mediu de
+dezvoltare Open Source, ce oferă atât suport hardware cât și software.
+Pentru colectarea datelor din mediu am folosit doi senzori ultrasonici de distanța
+HC-SR04, și două servomotoare pentru a oferi mobilitate acestora. Senzorul HC-SR04
+oferă precizia dorită la un preț scăzut.
+Șasiul este unul standard, având doua roti acționate individual de motoare de
+curent continuu. Acest tip de șasiu oferă mobilitate ridicată robotului, ansamblul având
+un grad scăzut de complexitate.
+32
+4.2. Componente hardware
+Lista componentelor hardware este următoarea:
+ Placa de dezvoltare - Arduino UNO R3
+ Senzori ultrasonici de distanță - HC-SR04
+ Servomotoare - TowerPro SG90
+ Modul Bluetooth HC-05
+ Driver de motoare cu circuitul integrat L298N
+ Motoare + sistem de reductoare 120:1 tip Pololu
+ Roți special realizate pentru motoarele tip Pololu
+ Roată de sprijin metalică (Pololu Ball Caster)
+ Placă de sprijin și șuruburi
+ Elemente pasive: rezistoare, condensatoare, diode, LED-uri
+ Breadbord, fire de conexiune
+ Surse de alimentare (baterii sau acumulatori)
+4.2.1. Arduino UNO R3
+Arduino UNO este o placă de dezvoltare ce are la baza microcontrolerul
+ATmega328. Aceasta dispune de 14 pini digitali de tipul intrare/ieșire, dintre care 6 pot fi
+folosiți ca ieșiri PWM, 6 pini de tipul intrări analogice, un osciloscop de 16MHz, conector
+USB, jack de alimentare, header ICSP și un buton pentru resetare. Conține, de
+asemenea, toate elementele necesare funcționării microcontrolerului.
+Arduino UNO diferențiază fața de predecesorii săi prin faptul ca nu mai folosește
+circuitul auxiliar de programare FDTI USB la serial. In schimb se folosește de
+Atmega16U2, programat ca și convertor USB la serial.
+33
+"Uno" se traduce din italiană ca "unu" și poartă această denumire pentru a
+marca lansarea versiunii 1.0 a mediului de dezvoltare Arduino.
+Microcontroler ATmega328
+Tensiune de operare 5V
+Tensiune de intrare 7-12V
+Tensiune de intrare (limite) 6-20V
+Pini digitali I/O 14 (dintre care 6 pot fi ieșiri PWM)
+Pini analogici I 6
+Curentul maxim prin pin I/O 40 mA
+Curent prin pin I/O 3.3V 50 mA
+Memorie Flash 32 KB (ATmega328), 0.5 KB ocupați de bootloader
+SRAM 2 KB (ATmega328)
+EEPROM 1 KB (ATmega328)
+Frecventa de ceas 16 MHz
+Tabelul 4.1. Specificații tehnice Arduino UNO R3
+Fiecare dintre cei 14 pini digitali poate fi folosit fie ca intrare fie ca ieșire folosind
+funcțiile pinMode(), digitalWrite() și digitalRead(). Aceștia funcționează la o tensiune de
+5V, iar curentul maxim admis este de 40mA, și au o rezistența(20-50 kOhms) de tip pullup internă.
+Figura 4.1. Arduino UNO R3 spate Figura 4.1. Arduino UNO R3 fața
+34
+Pe lângă acestea unii pini au funcții speciale, cum ar fi:
+ Serial: 0 (RX) și 1 (TX) folosiți pentru a primi(RX) și a transmite(TX) date seriale
+TTL. Acești pini sunt conectați la pinii corespunzători ai emulatorului USB la
+Serial TTL ATmega16U2.
+ Întreruperi externe: 2 și 3, aceștia pot fi folosiți pentru a activa întreruperi la
+detectarea unei valori mici, o muchie crescătoare sau descrescătoare, sau
+schimbarea stării.
+ PWM: 3, 5, 6, 9, 10, și 11. Furnizează un semnal de ieșire pe 8 biți folosind
+funcția analogWrite()
+ SPI: 10 (SS), 11 (MOSI), 12 (MISO), 13 (SCK).
+ LED: 13. De pinul digital 13 este conectat un LED.
+Arduino UNO dispune și de 6 intrări analogice de la pinul A0 până la pinul A5.
+Fiecare dintre acestea oferă o rezoluție de 10 biți. In plus unii dintre acești pini pot avea
+și funcții specializate, cum ar fi comunicația TWI ( A4 sau pin SDA și A5 sau pin SCL).
+Arduino UNO oferă numeroase facilități de comunicare intre aceasta și computer,
+cu o alta placa Arduino sau alt microcontroler. ATmega328 poate realiza comunicare
+serială UART TTL (5V), comunicare I2C(TWI) sau SPI
+4.2.2. Senzor de distanță HC-SR04
+Senzorul de distanța HC-SR04 poate măsura distanțe în gama 2 – 400 cm, cu o
+precizie de până la 3 mm. Modulul include transmițătorul și receptorul ultrasonic cat și
+circuitul de control.
+Figura 4.3. Modul HC-SR04
+35
+Pentru a măsura distanța transmițătorul emite automat, opt pulsuri de 40KHz și
+așteaptă ca acestea să se întoarcă. După receptarea pulsurilor emise, se poate calcula
+timpul de la momentul în care a fost emis semnalul pana în momentul receptării
+acestuia.
+Distanța se va calcula ca fiind jumătate din durata timpului(de când semnalul a
+fost emis pana la recepție) înmulțit cu viteza sunetului(340 m/s).
+Tensiune de operare 5V
+Curentul maxim 15 mA
+Frecvența de lucru 40 KHz
+Distanța maximă 4m
+Distanța minimă 2cm
+Unghi de măsura 15 grade
+Semnal de intrare Impuls TTL 10us
+Tabelul 4.2. Specificații tehnice modul HC-SR04
+4.2.3. Modul Bluetooth HC-05
+Modulul Bluetooth HC-05 oferă suport pentru comunicare prin SPP(Serial Port
+Protocol). Modulul respecta standardul Bluetooth V2.0+EDR (Enhanced Data Rate) și
+oferă viteze de transfer de pana la 3Mbps. Transmițătorul radio funcționează la
+frecvența 2.4 GHz. Folosește chipul CSR Bluecore 04 extern cu tehnologie CMOS și
+AFH(Adaptive Frequency Hopping Feature). Are dimensiuni reduse, de doar
+12.7mmx27mm, și este ideal pentru proiectele de mici dimensiuni.
+Figura 4.4. Modul Bluetooth HC-05
+36
+Specificații hardware:
+ Sensitivitate: -80dBm
+ Putere de transmisie RF: +4dBm
+ Tensiune de operare: 1.8V – 3.6V
+ Control PIO
+ Interfața UART cu baud rate programabilă
+ Antena integrată
+ Conectori laterali
+Specificații software:
+ Baud rate implicit: 9600 (suportă: 9600, 19200, 38400, 57600, 115200, 230400,
+460800)
+ Biți de date: 8
+ Bit de stop: 1
+ Paritate: Nu
+ Data control: has
+ Folosind un puls crescător pe PIO0, dispozitivul se va deconecta
+ Instrucțiune de stare PIO1: low – deconectat; high – conectat
+ Conectare automată la ultimul dispozitiv conectat
+ PINCODE implicit: ”0000”
+ Reconectare automată după 30 min in cazul in care conexiunea a fost întreruptă din
+cauză ca dispozitivul a ieșit din raza de acțiune.
+4.2.4. Driver de Motoare
+Driverul de motoare are la baza circuitul L298N Dual Full-Bridge. L298N este un
+circuit integrat monolitic, de tensiune înaltă și curenți mari (2A), creat pentru a accepta la
+intrare standardul TTL logic și de a furniza la ieșire sarcini inductive precum relee,
+solenoide, motoare alimentate in curent continuu sau motoare de tipul steper. Sunt
+Figura 4.5. L298N Dual H Bridge
+37
+oferite 2 intrări pentru a activa și dezactiva punțile, indiferent de semnalul primit la
+intrare. Emitorii tranzistoarelor inferioare ai fiecărei punți sunt conectați împreună pentru
+a putea conecta o rezistentă externă.
+Componentele necesare pentru acest driver sunt următoarele:
+ Placa PCB
+ Circuitul L298N (Multiwatt15)
+ 8 diode 1N4001
+ 2 condensatoare 100nF
+ 2 rezistențe 0,47Ohm x 1W
+ Fire pentru conexiuni
+4.2.5. Elemente de acționare
+Motoare + sistem de reductoare 120:1 tip Pololu
+Ansamblul motor plus reductoare 120:1 este ideal pentru roboți, datorită
+dimensiunilor mici și puterii mari. Alimentat la o tensiune de 6V ansamblul oferă un cuplu
+de aproximativ 0.5 Nm și 85 RPM. Curentul de rulare in gol este 70mA, iar curentul in
+sarcină poate ajunge la 800mA.
+Figura 4.6. Motoare + sistem de reductoare 120:1
+38
+Servomotoare - TowerPro SG90
+Un servomotor este un actuator ce permite controlul exact al pozitiei unghiulare,
+al vitezei și accelerației. Este format dintr-un motor set de roti dințate pentru a reduce
+viteza de rotație și a crește cuplul, și un senzor pentru a returna poziția exactă a
+rotorului.
+Specificații tehnice:
+Greutate: 9g
+Dimensiuni(L x W x H): 22.0 x 11.5 x 27 mm
+Cuplul la 4.8V: 1.17 Nm (1.2 kg/cm)
+Tensiune de alimentare: 4 – 7V
+Viteza la 4.8V: 0.12 sec/ 600.12 sec/ 60 grade
+4.3. Arhitectura hardware a robotului
+Înainte de a Începe conectarea pieselor intre ele este foarte important sa avem
+în vedere specificațiile tehnice ale fiecăreia. Printre cele mai importante aspecte ce
+trebuie luate in considerare sunt: tensiunea de alimentare, puterea consumată,
+polaritatea(dacă este cazul).
+Senzorii ultrasonici de distanță HC-SR04 au nevoie de o tensiune de alimentare
+de 5V, așa că pot fi alimentați de la pinul 5V al Arduino UNO. Pentru proiecte mai mari
+se recomandă alimentarea de la surse diferite.
+Figura 4.6. Servomotor
+39
+HC-SR04 are funcționează pe principiul sonarului(trimite un semnal audio și
+așteaptă până acesta se întoarce) și are nevoie de 2 pini: TRIG și ECHO.
+Astfel vom conecta pinul TRIG(violet) la pinul 7(respectiv 12) al Arduino, acesta
+va fi setat ca și ieșire digitala. Pinul ECHO(portocaliu) se va conecta la pinul 8(respectiv
+13) al Arduino, ce va fi setat ca intrare digitală.
+Modulul Bluetooth HC-05 are nevoie de o tensiune de alimentare de 3.3V. De
+aceea vom alimenta modulul de la pinul 3.3V de pe placa Arduino.
+Deoarece Arduino folosește standardul TTL(5V) pentru comunicarea serială, iar
+modulul Bluetooth funcționează la 3.3V vom face un divizor de tensiune pentru a
+reduce tensiunea de 5V venită de la Arduino (pinul TX). Valorile rezistențelor folosite vor
+fi de 2k Ohm respectiv 1k Ohm.
+Regula divizorului de tensiune se poate aplica pentru a determina tensiunea de
+la ieșirea unui circuit ca cel prezentat mai jos, fără sarcină la ieșire. În acest caz ambele
+rezistoare sunt parcurse de același curent I, determinat cu legea lui Ohm:
+Figura 4.7. Conectare Arduino - HC-SR04
+40
+Vom putea afla valoarea tensiunii la ieșire U0, folosind formula:
+Daca înlocuim in formulă cu valorile noastre vom obține o valoare de
+aproximativ 3.33V pentru U0, exact ceea ce ne doream.
+Figura 4.8. Divizorul de tensiune
+Figura 4.9. Conexiune Arduino - Modul Bluetooth
+41
+Motoarele de tipul servo sunt de diverse dimensiuni și puteri. Modelul ales de
+noi, este unul ce poate fi alimentat la 5V și are un cuplu de maxim 90g, mai mult decât
+suficient pentru a mișca senzorul de distanță.
+Pentru a funcționa servomotorul necesita un singur pin digital PWM de pe placa
+Arduino. Pentru a înțelege mai bine cum funcționează un servomotor, in figura 4.10
+este descris modul in care frecvența semnalului PWM influențează unghiul de rotație al
+servomotorului.
+Astfel vom conecta borna de alimentare a servo, la pinul 5V al Arduino, firul de
+masă la GND, iar firul de semnal la un pin digital PWM (9 respectiv 10).
+Figura 4.10. Principiul de funcționare al unui
+servomotor
+Figura 4.11. Conexiune Arduino - Servomotoare 
+42
+Motoarele ce acționează roțile au nevoie de sursă separată de alimentare,
+deoarece acestea au nevoie de o tensiune și un curent mai mare(9v și 1A). Motoarele
+pot introduce in sistem impedanțe mari, datorita regimului de generator al acestora.
+Pentru a rezolva aceste doua impedimente este necesara construirea unui driver de
+motoare. Acesta este format in jurul circuitului L298N Dual Full-Bridge, alături de 8
+diode, 2 rezistențe și 2 condensatoare. Rolul driverului de motoare este de primi intrări
+comandate in 5V(de la Arduino) și de furniza la ieșire comenzi in tensiunea și curentul
+dorit alimentării motoarelor.
+Driverul astfel creat va primi 6 intrări și va furniza 4 ieșiri. Cele 4 ieșiri vor fi
+legate la bornele motoarelor, iar cele 6 intrări la pinii Arduino. „Enable A” și „Enable B”
+decid daca motoarele primesc curent sau nu, o valoare mare pe acești pini va permite
+curentului sa se scurgă către motoare, iar o valoare mică nu. Deci vom lega aceste două
+borne la pinii digitali 2 și 4 de pe Arduino. Celelalte patru intrări vor fi legate la pinii
+digitali PWM 3, 5, 6 și 11, deoarece curentul de la ieșirea driverului de motoare va fi
+direct proporțional cu valoarea primită la intrare.
+Figura 4.12. Conexiunea Arduino - driver
+de motoare - motoare 
+43
+4.4. Componente software
+Partea software a acestui proiect consta in două aplicații, una creata pentru
+dispozitivele mobile ce rulează sistemul de operare Android, și una creată pentru
+Arduino. Cele doua aplicații pot comunica intre ele wireless prin Bluetooth.
+4.4.1. Algoritmul aplicației smartphone
+Programul scris pentru dispozitivele mobile are rolul de a crea o interfața cu
+utilizatorul, de a oferi un mod de control asupra robotului. Astfel am creat o aplicație
+compatibila cu sistemul de operare Android (de la v2.3 in sus), optimizată pentru a
+funcționa pe Android v4.2.2 Jelly Bean, și dispozitivul Google Nexus S.
+Aplicația poate găsi dispozitivele Bluetooth împerecheate cu telefonul și oferă
+utilizatorului posibilitatea de a se conecta la dispozitivul dorit.
+După ce s-a stabilit o conexiune intre telefon și robot, layout-ul principal se
+modifică.
+Noul layout conține butoanele necesare comandării robotului. În partea de jos se
+afla 3 butoane (Manual, PID și Automat) prin care putem seta regimul de funcționare. In
+Figura 4.12. Afișarea dispozitivelor împerecheate
+cu telefonul
+44
+partea de sus se află butoanele direcționale necesare comandării manuale a robotului,
+iar in partea centrală se află butonul pentru oprirea de urgență.
+Programul sursă al aplicației cuprinde și următoarele funcții:
+ private void checkBt() – verifică dacă telefonul este compatibil Bluetooth, apoi
+verifică starea acestuia, pornit sau oprit. In cazul in care Bluetooth-ul este oprit
+utilizatorul este alertat și întrebat dacă dorește pornirea acestuia. Daca utilizatorul
+dorește acest lucru aplicația va continua rularea, altfel se va opri executarea.
+Figura 4.12. Butoanele necesare comandării
+robotului
+Figura 4.13. Cererea de activare Bluetooth
+45
+ private void startDiscovery() – caută dispozitivele din aria sa de acoperire.
+ private void getPairedDevices() – verifică ce dispozitive din cele descoperite, sunt
+deja împerecheate cu telefonul. Dispozitivele împerecheate sunt salvate intr-un
+ArrayList de tipul <String>.
+ public void onReceive(Context context, Intent intent) – populează lista cu
+dispozitivele descoperite, daca acestea sunt împerecheate cu telefonul textul
+„(Paired)” va apărea alături de numele și adresa fizică a dispozitivului.
+ public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) –
+funcție se apelează atunci când utilizatorul selectează un dispozitiv din listă,
+aceasta anulează comanda de descoperire dispozitive și deschide un nou canal
+de comunicație, in cazul în care dispozitivul este deja împerecheat, altfel
+returnează un mesaj de eroare.
+ public void handleMessage( Message msg) – verifică daca s-a reușit conexiunea
+și dacă aceasta este încă activa. Daca da, se trimite un caracter de test (“#”). In
+cadrul acestei funcții sunt definite și butoanele, cu acțiunile aferente acestora.
+ button1.setOnClickListener(new OnClickListener() – funcția este apelată la
+apăsarea butonului button1. La apelare funcția va trimite un caracter prin
+conexiunea deja deschisă. Caracterul trimis diferă in funcție de butonul apăsat:
+o "w" – Înainte
+o "a" – Stânga
+o "d" – Dreapta
+o "s" – Înapoi
+o "q" – Stop
+o "h" – Oprire de urgența
+o "m" – Manual
+o "n" – Automat
+o "p" – PID
+Astfel aplicația este capabilă să descopere dispozitivele din raza sa de acțiune,
+poate face diferența dintre un dispozitiv deja împerecheat și unul nou. Apoi se poate
+conecta la unul din dispozitivele împerecheate selectate de utilizator. După stabilirea
+conexiunii, telefonul este capabil sa trimită mesaje către robot, acestea urmând sa fie
+interpretate ca și comenzi.
+46
+4.4.2. Algoritmul programului Arduino
+Pe placa de dezvoltare Android se afla un program scris in limbajul nativ
+Android. Acesta are rolul de prelucra informațiile preluate de la senzori si de la modulul
+Bluetooth, si să comande mișcarea robotului.
+Pentru a îndeplini aceste funcții trebuie ca mai întâi sa definim pinii pe care ii
+vom folosi si tipul acestora(intrare/ieșire). Astfel vom avea:
+ Pin 2, 3, 4, 5, 6, 10 – ieșiri digitale (3, 5, 6, 10 - PWM), necesare funcționării
+roților
+ Pin 7, 12 – ieșiri digitale, necesare senzorilor de distanța
+ Pin 8, 13 – intrări digitale, necesare senzorilor de distanța
+ Pin 9, 11 – ieșiri digitale PWM, necesare servomotoarelor
+ Pin 0(RX) și 1(TX) – necesari pentru comunicația Bluetooth
+După ce am trecut de partea de inițializare a pinilor si variabilelor in funcția void
+setup(). programul are următorul comportament: verifică in ce mod de operare se află,
+verifică dacă este deschisă conexiunea cu telefonul, iar daca primește un caracter îl
+verifică pentru a determina, daca schimbă modul de operare, sau inițiază o comandă.
+Daca nu este disponibila conexiunea Bluetooth, sau caracterul venit nu este unul dorit
+atunci programul își continuă rularea in modul anterior stabilit.
+Bucla principală:
+mod := ‘*’ ;
+repeta
+dacă mod = ’*’ execută mod_manual();
+dacă mod = ’%’ execută mod_autonom();
+dacă mod = ’#’ execută mod_PID();
+șir_primit = “ ”
+dacă șir_primit <> null execută
+dacă șir_primit = ’n’ executa mod := ”%”
+altfel dacă șir_primit = ’m’ executa mod := ”*”
+altfel dacă șir_primit = ’p’ executa mod := ”#”
+cât timp 1 = 1;
+Pentru a măsura distanța am creat funcția int distanta(int trigPin, int echoPin),
+aceasta returnează o variabila de tip întreg in care este memorată valoarea distanței
+măsurate. Funcția primește ca parametri valoarea pinilor la care se află legat senzorul.
+Funcția trimite un semnal de 10ms pe pinul TRIG, apoi așteaptă ca semnalul să
+se întoarcă pe pinul ECHO. Distanța se va calcula ca fiind jumătate din durata 
+47
+timpului(de când semnalul a fost emis pana la recepție) înmulțit cu viteza sunetului(340
+m/s).
+În cazul în care robotul se află in modul manual de funcționare se va apela
+funcția void mod_manual(). In interiorul acestei funcții vom seta poziția servomotoarelor
+la 900
+, iar in funcție de caracterul primit prin Bluetooth, comandă roților sa se rotească
+înainte, înapoi sau să nu se rotească.
+void mod_autonom() este funcția ce se apelează atunci când se activează
+semaforul pentru a începe modul autonom de lucru. Aici vom seta poziția servomotorului
+din față la 900
+(poziția înainte), si vom comanda roțile sa se rotească înainte. Această
+operație va fi întreruptă doar dacă valoarea returnată de funcția ce măsoară distanța
+este mai mică decât 15 cm. În cazul în care se întâmplă acest lucru vom trimite
+comandă roților sa meargă înapoi, apoi vom apela funcția ce returnează distanța, de
+doua ori, o dată după ce setam servomotorul in poziția cea mai din stânga, și încă o
+dată, când setăm servomotorul in poziția cea mai din dreapta. Acum putem compara
+distanța liberă din stânga si din dreapta. După această evaluare, se ia decizia de a
+merge in partea stângă sau in partea dreaptă, in funcție de distanța mai mare
+disponibilă.
+Din dorința de a automatiza si mai mult acest robot, am creat modul de
+funcționare PID. Acesta ascunde in spate un algoritm de reglare de tipul
+PID(proporțional integrativ derivativ).
+Acești algoritmi există de mai bine de 100 de ani, dovedindu-se eficienți în
+controlul aplicațiilor industriale de diferită natură, iar in ultima perioadă au început sa fie
+utilizați în aplicații simple de robotică.
+Pentru a înțelege algoritmul mai ușor vom face o analogie cu un șofer care
+încearcă sa mențină constantă viteza automobilului. Aceasta va fi influențată de
+înclinarea drumului, viteza vântului, calitatea carburantului, si mulți alți factori, iar pentru
+a menține viteza la o valoarea constantă șoferul va ajusta pedala de accelerație.
+În cazul robotului, avem senzorii de distanță ultrasonici, pentru a afla poziția
+relativă a acestuia. Există mai multe metode pentru a transpune in cifre modul in care
+mediul influențează poziția robotului. O metodă cu un grad de complexitate mai mic este
+aceea de a crea o variabilă numită eroare, aceasta își va modifica in mod constant
+valoarea, fiind calculată ca și diferența dintre valoarea distanței returnată de senzorul
+din față si cea returnată de senzorul de distanță din spate. Pentru a fi pe calea cea
+bună, eroarea ar trebui sa fie cat mai apropiată de 0, dacă eroarea este negativa atunci
+înseamnă ca robotul a deviat de la traseu in partea dreaptă, in caz contrar in partea
+stângă.
+48
+Pentru a controla abaterea fata de poziția dorită, putem micșora sau mări viteza
+fiecărei roți cu o anumita constantă pe baza semnului erorii. Sa luam de exemplu viteza
+rotii stângi. Comanda pentru aceasta va respecta următoarea formulă. De menționat
+este faptul că pe roata dreaptă aplicăm aceeași formulă dar cu semnele inversate
+Acest model va funcționa foarte bine, însă vom avea parte de oscilații mari,
+deoarece schimbarea de turație va fi foarte bruscă indiferent de mărimea erorii. Acest
+model este un exemplu de control proporțional și astfel putem adapta formula:
+Dacă vrem să eliminam din aceste oscilații bruște, atunci când avem o eroare
+mai mare trebuie să avem si o comandă mai mare, iar când eroarea este mică și
+comanda trebuie să fie mică. Aceasta este componenta integrală a algoritmului de
+reglare PID.
+Iar daca vrem o comandă si mai lină putem adăuga si ultima componentă a
+regulatorului PID, și anume componenta derivativă.
+Pentru a implementa formula de mai sus pe un microcontroler este necesară
+discretizarea acesteia. Una din cele mai simple metode de discretizare o reprezintă
+dezvoltarea in serie Taylor a derivatei și o aproximare Riemann a integralei. Astfel
+obținem următoarea formulă:
+49
+După ce vom include valoarea lui ∆t in interiorul constantelor Ki și Kd vom
+ajunge la următorul algoritm, ce calculează diferența de viteză ce trebuie aplicată
+fiecărei roți.
+eroarea_anterioară = 0
+integrala = 0
+repeta
+eroarea_curentă = distanța_față – distanța_spate
+integrala = integrala + eroarea_curentă
+derivata = eroarea_curentă – eroarea_anterioară
+comanda = Kr * eroarea_curentă + Ki * integrala + Kd* derivata
+eroare_anterioară = eroarea_curentă
+cat timp (1==1)
+Pentru a afla valorile constantelor Kr, Ki si Kd, am folosit metoda de acordare
+experimentală Ziegler-Nichols. Această metodă se bazează pe încercarea mai multor
+valori ale constantelor, iar in urma măsurătorilor alegem varianta cea mai bună, mai
+exact:
+ Am ales Kr = 5 , iar Kd și Ki 0, după mărirea progresivă a valorii lui Kr, am
+observat ca robotul rămâne pe traseul stabilit atunci când Kr = 9.
+ Am lăsat valoarea lui Kr nemodificată si am crescut cu pași mici Kd, in jurul valorii
+0,6 oscilațiile au început sa scadă in intensitate.
+ Am încercat si mărirea constantei Ki, însă au apărut oscilații prea mari, valoarea
+acesteia influențând intr-un mod accentuat efectul asupra robotului.
+4.5. Etapele construirii robotului
+Deoarece construirea robotului are un grad mediu de dificultate, am luat decizia
+de a împarți construcția lui in câteva etape cu un grad mai scăzut de dificultate. Testând
+la fiecare etapă subansamblele implicate si conexiunile aferente, putem executa mai
+ușor operațiuni de depanare si calibrare, rezultatul final fiind cel așteptat.
+Figura 4.14. Șasiu + Arduino UNO
+50
+Am început prin a asambla șasiul și roțile. După ce ne-am asigurat că toate
+piesele sunt corect fixate, iar motoarele funcționează am trecut mai departe, la
+construirea driverului de motoare. Aceasta a fost o operație minuțioasa ce a necesitat
+însă un grad mic de dificultate. După construcție acesta a fost testat si pus pe șasiu.
+Următorul pas a fost reprezentat de montarea primului senzor de distanța pe
+servomotor, și conectarea la Arduino. Acest pas a implicat si calibrarea senzorului,
+pentru a fi gata de folosire imediat ce tot ansamblul va fi gata.
+Au urmat adăugarea celui de-al doilea ansamblu servomotor-senzor de distanța
+si a modulului Bluetooth. Rezultatul final este acesta:
+Figura 4.15. Driver de motoare
+Figura 4.16. Robot autonom
+51
+Concluzii
+Această lucrare descrie modul de implementare al unui robot autonom mobil, cu
+o placă Arduino UNO și interfață de comandă wireless pe un dispozitiv Android folosind
+comunicarea Bluetooth.
+Robotul reușește să îndeplinească toate sarcinile pentru care a fost creat, are
+atât un mod autonom, cat si unul manual și dispune de un mod de oprire de urgența
+comandat in caz de avarii. Al treilea mod de funcționare si anume modul in care robotul
+urmărește cu succes peretele, reprezintă o implementare practica a algoritmului de
+reglare PID.
+Întregul ansamblu, format din robot mobil și Android, reprezintă doar o
+implementare practica a noțiunilor dobândite in facultate, aplicațiile sale viitoare putând
+fi nelimitate, implementarea regulatorului de tip PID îl face ideal pentru integrarea intr-un
+robot de uz casnic de tipul aspiratorului inteligent, de asemenea posibilitatea de
+comunicare cu un dispozitiv wireless Îi poate aduce numeroase aplicații si in domenii
+unde prezența oamenilor este imposibila sau ostilă, robotul putând fi comandat de la o
+distanța sigură.
+Principalele limitări actuale ale acestui robot se refera la distanța de la care
+poate fi comandat (aproximativ 10m), durata de viață a bateriilor și precizia senzorilor.
+La nivel software, minusurile pot fi considerate: aplicația de comandă ce rulează pe
+telefonul mobil, interfața simplistă, și instabilitatea aplicației.
+52
+Anexe
+Anexa 1.Diagrama pinilor Arduino
+53
+Anexa 1.Schema electrica Arduino UNO
+54
+Anexa 1.Diagrama pinilor modulului Bluetooth HC-05
+55
+Listă imagini, tabele și abrevieri
+56
+Bibliografie
+Drăgan, Violeta 2013. Utilizarea roboţilor din generaţia a treia. Editura Sfântul Ierarh Nicolae
+Isaac Asimov 1942. Runaround.
+http://en.wikipedia.org/wiki/Microcontroller
+Bray, Jennifer şi Sturman, Charles F. „Bluetooth – Connect without Cables” – Prentice
+all PTR, 2001
+Ericsson Mobile Communications AB „Users Manual – Bluetooth PC Reference Stack by
+Ericsson”, 2000
+Ericsson Web Site www.ericsson.com/bluetooth
+http://en.wikipedia.org/wiki/Bluetooth
+http://www.eclipse.org/org/#about

@@ -1,0 +1,2107 @@
+Pattern: Pentru a controla abaterea fata de poziția dorită, putem micșora sau mări viteza
+fiecărei roți cu o anumita constantă pe baza semnului erorii. Sa luam de exemplu viteza
+rotii stângi. Comanda pentru aceasta va respecta următoarea formulă. De menționat
+este faptul că pe roata dreaptă aplicăm aceeași formulă dar cu semnele inversate
+Acest model va funcționa foarte bine, însă vom avea parte de oscilații mari,
+deoarece schimbarea de turație va fi foarte bruscă indiferent de mărimea erorii. Acest
+model este un exemplu de control proporțional și astfel putem adapta formula:
+Dacă vrem să eliminam din aceste oscilații bruște, atunci când avem o eroare
+mai mare trebuie să avem si o comandă mai mare, iar când eroarea este mică și
+comanda trebuie să fie mică. Aceasta este componenta integrală a algoritmului de
+reglare PID.
+Iar daca vrem o comandă si mai lină putem adăuga si ultima componentă a
+regulatorului PID, și anume componenta derivativă.
+Pentru a implementa formula de mai sus pe un microcontroler este necesară
+discretizarea acesteia. Una din cele mai simple metode de discretizare o reprezintă
+dezvoltarea in serie Taylor a derivatei și o aproximare Riemann a integralei. Astfel
+obținem următoarea formulă:
+49
+După ce vom include valoarea lui ∆t in interiorul constantelor Ki și Kd vom
+ajunge la următorul algoritm, ce calculează diferența de viteză ce trebuie aplicată
+fiecărei roți.
+eroarea_anterioară = 0
+integrala = 0
+repeta
+eroarea_curentă = distanța_față – distanța_spate
+integrala = integrala + eroarea_curentă
+derivata = eroarea_curentă – eroarea_anterioară
+comanda = Kr * eroarea_curentă + Ki * integrala + Kd* derivata
+eroare_anterioară = eroarea_curentă
+cat timp (1==1)
+Pentru a afla valorile constantelor Kr, Ki si Kd, am folosit metoda de acordare
+experimentală Ziegler-Nichols. Această metodă se bazează pe încercarea mai multor
+valori ale constantelor, iar in urma măsurătorilor alegem varianta cea mai bună, mai
+exact:
+ Am ales Kr = 5 , iar Kd și Ki 0, după mărirea progresivă a valorii lui Kr, am
+observat ca robotul rămâne pe traseul stabilit atunci când Kr = 9.
+ Am lăsat valoarea lui Kr nemodificată si am crescut cu pași mici Kd, in jurul valorii
+0,6 oscilațiile au început sa scadă in intensitate.
+ Am încercat si mărirea constantei Ki, însă au apărut oscilații prea mari, valoarea
+acesteia influențând intr-un mod accentuat efectul asupra robotului.
+4.5. Etapele construirii robotului
+Deoarece construirea robotului are un grad mediu de dificultate, am luat decizia
+de a împarți construcția lui in câteva etape cu un grad mai scăzut de dificultate. Testând
+la fiecare etapă subansamblele implicate si conexiunile aferente, putem executa mai
+ușor operațiuni de depanare si calibrare, rezultatul final fiind cel așteptat.
+Figura 4.14. Șasiu + Arduino UNO
+50
+Am început prin a asambla șasiul și roțile. După ce ne-am asigurat că toate
+piesele sunt corect fixate, iar motoarele funcționează am trecut mai departe, la
+construirea driverului de motoare. Aceasta a fost o operație minuțioasa ce a necesitat
+însă un grad mic de dificultate. După construcție acesta a fost testat si pus pe șasiu.
+Următorul pas a fost reprezentat de montarea primului senzor de distanța pe
+servomotor, și conectarea la Arduino. Acest pas a implicat si calibrarea senzorului,
+pentru a fi gata de folosire imediat ce tot ansamblul va fi gata.
+Au urmat adăugarea celui de-al doilea ansamblu servomotor-senzor de distanța
+si a modulului Bluetooth. Rezultatul final este acesta:
+Figura 4.15. Driver de motoare
+Figura 4.16. Robot autonom
+Text: Universitatea de Vest din Timișoara
+Facultatea de Chimie, Biologie, Geografie
+Departamentul Biologie-Chimie
+Specializarea Biochimie
+Lucrare de licență
+Coordonator științific: Student:
+Lect. Dr. Lucian Pârvulescu Bianca–Vanesa Boroș
+Timișoara
+2014
+Universitatea de Vest din Timișoara
+Facultatea de Chimie, Biologie, Geografie
+Departamentul Biologie-Chimie
+Specializarea Biochimie
+Ciclul de viaţă a trei specii de amfipode simpatrice
+(Pancrustaceea: Amphipoda): Gammarus balcanicus
+ssp. dacicus, Niphargus valachicus şi Synurella
+ambulans
+Coordonator științific: Student:
+Lect. Dr. Lucian Pârvulescu Bianca–Vanesa Boroș
+Timișoara
+2014 
+Cuprins
+1. Introducere 4
+1.1 Importanţa amfipodelor 5
+1.2 Răspândirea geografică 7
+1.3 Ecologia amfipodelor 8
+1.4 Morfologia şi anatomia amfipodelor 10
+1.4.1. Morfologia externă 10
+1.4.2. Organizaţia internă 17
+1.5 Reproducerea și dezvoltarea amfipodelor 22
+1.6 Descrierea speciilor 24
+1.6.1. Descrierea speciei Gammarus balcanicus ssp. dacicus 26
+1.6.2. Descrierea speciei Niphargus valachicus 29
+1.6.3. Descrierea speciei Synurella ambulans 31
+2. Materiale şi metode 35
+2.1. Caracterizarea zonelor de studiu 35
+2.2. Caracterizarea stațiilor de prelevare 37
+2.3. Colectarea speciilor 39
+2.4. Analiza speciilor 40
+2.5. Prelucrarea și interpretarea datelor 44
+3. Rezultate și discuții 45
+3.1. Numărul de indivizi capturați 45
+3.2. Dimensiunea indivizilor capturați 55
+3.3. Numărul de ouă al femelelor ovigere 59
+3.4. Dimensiunea ouălor 60
+3.5. Indici 61
+3.6. Date statistice 62
+4. Concluzii 63
+5. Mulțumiri 64
+6. Bibliografie 65
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+4
+Capitolul 1:
+Introducere
+ Amfipoda este un ordin ce cuprinde crustacee din clasa Malacostraca, supraordinul
+Peracarida (Väinölä et al., 2008). Acest ordin este divizat în trei, sau după unii autori, patru
+subordine: Caprellidea, Hyperiidea, Gammaridea, respectiv Ingolfiellidea (DiSalvo, 2006).
+ Amfipodele sunt crustacee care se reproduc prin ouă, care sunt ținute într-un marsupiu,
+între picioarele toracice. Juvenilii acestora sunt supuși unei dezvoltări directe, neexistând o
+stare larvară independentă, aceștia ajungând la maturitate după câteva năpârliri, fără
+metamorfoză (Väinölä et al., 2008).
+ Amfipodele se caracterizează prin trei trăsături majore: prin absența unei carapace, prin
+fuzionarea primului segment toracic cu capul și prin divizarea abdomenului în două părți
+(pleon si urosom), fiecare fiind formată din trei segmente (Cărăuşu et al., 1955).
+ Majoritatea amfipodelor au corpul curbat, cu convexitatea spre partea dorsală. Forma
+diferă în funcţie de morfologia corpului: apare turtit lateral datorită plăcilor coxale şi
+epimerale foarte bine dezvoltate (Gamaride); este aproape cilindric, plăcile coxale lipsind
+(Caprelide); este liniar datorita rostrului si telsonului foarte mult alungite (Rhabdonectes
+armatus din familia Oxycephalidae); este turtit dorsoventral (Cheluride, Ciamide si
+Corophiide). Pe suprafaţa corpului deseori se găsesc creste, spini, zimţi sau peri ce au rol în
+clasificare (Cărăuşu et al., 1955).
+ Dimensiunea amfipodelor variază în limite largi, în funcţie de specie: de la 1,5 mm
+(Microniphargus sp., Bogidiella sp.) la 150 mm (Alicella gigantea, Thaumatops loveni)
+(Cărăuşu et al., 1955), dar s-a descoperit și un amfipod fosil de 170 mm, Rosagammarus
+minichiellus (McMenamin et al., 2013). În mod obişnuit dimensiunea lor este de 4-20 mm,
+aşa cum este cazul amfipodelor din România, valoarea medie fiind de 10 mm (Cărăuşu et
+al., 1955).
+ Amfipodele sunt în general unicolore: roşii, galbene, verzi sau albastre. Exista însă şi
+specii la care coloritul variază de la cafeniu-roşcat la galben sau verde-albăstrui (Gammarus 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+5
+locusta). Formele înotătoare sunt transparente, iar cele subterane sunt nepigmentate.
+Amfipodele ce trăiesc printre alge pot prezenta cromatofori (Cărăuşu et al., 1955). S-a
+descoperit că pigmentația a trei specii de amfipode (Gammarus pulex, G. marinus, Orchestia
+gammarella) se datorează, aproape exclusiv, pigmenților carotenoizi, incluzând în fiecare caz
+o proporție de acid carotenoid de tip astacină. În cazul amfipodelor cavernicole, care sunt
+incolore și nu conțin nici măcar urme de carotenoizi, se presupune că la început acestea au
+avut acest pigment. Se presupune că lipsa culorii nu se datorează lipsei de carotenoizi în
+hrană, ci lipsei luminii (Beatty, 1949).
+1.1. Importanţa amfipodelor
+ Amfipodele prezintă o mare importanţă datorită faptului că acestea constituie hrana unor
+peşti industriali. Mai mult decât atât, aceste amfipode se găsesc uneori în aglomerări de mii
+de exemplare pe m2
+, ceea ce atrage peştii migratori şi prin prezenţa/absenţa lor determină
+zonele de pescuit. De exemplu specia Haploops tubicola (3500 găuri săpate pe 1 m2
+) serveşte
+ca hrană Gadidelor şi Pleuronectidelor industriale, Gammarus locusta are acelaşi rol
+important în hrana anghilei (Anguilla anguilla) şi a lui Gadus morhua în apele daneze, în
+apele scoţiene Hyperiidele reprezintă hrana aproape exclusivă pentru Clupea harengus şi
+Gadus merlangus, iar în Golful Biscaia au acelaşi rol în nutriţia tonului (Cărăuşu et al.,
+1955).
+ Amfipodele au un rol important şi în nutriţia peştilor valoroşi din România. Acest lucru
+este demonstrat prin faptul că puii şi adulţii de sturioni recoltaţi în regiunea Sf. Gheorghe
+conţineau în stomac numeroase exemplare de amfipode (Corophium volutator,
+Pontogammarus sarsi, Niphargoides borodini, N. intermedius, N. compactus, N.
+spinicaudatus, Stenogammarus macrurus, Chaetogammarus, Dikerogammarus). De
+asemenea, la Agigea au fost pescuite păstrugi ce conţineau în stomac aceeaşi specie de
+Corophium: C. volutator, ceea ce dovedeşte că ele îşi iau hrana tot din regiunea gurilor
+Dunării, în acest fluviu descoperindu-se la Cazane un adevărat fund de Corophium (Cărăuşu
+et al., 1955).
+ Amfipodele joacă un rol important în ecosistemele acvatice, participând la autopurificarea apei și reprezentând hrana importantă a mai multor specii de pești (Muskó, 1990). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+6
+Introducerea de macro-nevertebrate, aşa cum sunt şi crustaceele, în piscicultură a fost
+utilizată pentru a îmbunătăţii dieta peştilor, utilizându-se multe specii de amfipode (Mirzajani
+et al., 2011). Din cauza valorii nutritive ridicate s-a încercat introducerea în bazinele
+interioare (de exemplu lacul Riţa) a unor specii de amfipode (Gammarus sp. din Caucaz)
+(Cărăuşu et al., 1955).
+ Un efect pozitiv îl au şi Talitridele care consumă cadavrele şi algele aruncate la mal,
+având rolul de sanitari ai plajelor (Cărăuşu et al., 1955).
+ Amfipodele au importanţă şi din punct de vedere hidrogeologic, aşa cum s-au arătat prin
+cercetări asupra amfipodelor subterane din Transcaucazia occidentală. Astfel Niphargidele
+din peşterile ce nu comunică între ele prin ape subterane sunt diferite morfologic, iar cele
+care prezintă o uniformitate şi vin din ape freatice apărute la suprafaţă, cu acelaşi orizont
+freatic (Cărăuşu et al., 1955).
+ Amfipodele sunt adesea alese pentru diferite studii, cum ar fi evaluarea calității apelor,
+ecologice sau ecotoxicitate, fiind bioindicatori, datorită distribuţiei largi, importanței
+ecologice și în lanțul trofic, sensibilităţii la contaminanți și poluare, şi adaptabilităţii și
+reproducerii în noi medii și culturi (Neuparth et al., 2002; Alonso et al., 2009; Mirzajani et
+al., 2011; Grabowski, 2014). De exemplu Gammarus pulex a fost utilizat pentru dezvoltarea
+de modele ecologice, instrumente interesante care ajută la luarea deciziilor în restaurarea a
+unor ecosisteme. Acesta s-a realizat prin supunerea acestei specii la modelele Artificial
+Neural Network (ANN) pentru a prezice durabilitatea habitatului acestora, deoarece aceasta
+este o specie indicatoare a calității apelor (Dedecker et al., 2006). G. Pulex este printre cele
+mai sensibile specii de nevertebrate acvatice la numeroși contaminanți (Adam et al., 2010).
+ De exemplu, comportamentul reproductiv și ratele de hrănire la Gammarus pulex pot fi
+întrerupte de o varietate de factori de mediu, inclusiv de prezența unor poluanți. Astfel aceste
+răspunsuri au fost folosite cu succes în timpul studiilor de laborator a toxicității metalelor
+grele și pe teren pentru evaluarea toxicității apelor de suprafață acidifiate (Bloor, Banks,
+2006).
+ În afară de speciile folositoare de amfipode, există şi specii dăunătoare. De exemplu
+unele specii de Lisianaside atacă peştii prinşi în plasă, Gammarus zaddachi distruge chiar 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+7
+plasele de pescuit, iar Chelura terebrans, săpând canale în lemn, cauzează stricăciuni destul
+de însemnate la diverse construcţii (vase, debarcadere). Totuşi aceste pagube cauzate de
+amfipode sunt, în general, neînsemnate (Cărăuşu et al., 1955).
+1.2. Răspândirea geografică
+ Amfipodele aparţin grupelor de crustacee cu reprezentanţi numeroşi şi răspândiţi în toate
+tipurile de apă: sărată, salmastră şi dulce (Cărăuşu et al., 1955). Amfipodele sunt în marea
+majoritate animale marine (DiSalvo, 2006). Acestea se găsesc de la zona de coastă
+(platforma de nisip) (Gammaridae, Haustoriidae), până la adâncimi de 5000 m
+(Lysianassidae) (Cărăuşu et al., 1955), din regiunile arctice şi antarctice (Lysianassiidae,
+Ampeliscidae), unde patru specii de amfipode gamaridiene își petrec întreg ciclul de viață în
+spațiile din gheața arctică de pe mare (Gammarus wilkitzkii, Ampherusa glacialis, Onisimus
+nanseni, O. glacialis) (Poltermann, Hop, Falk-Petersen, 2000), până în regiunile subtropicale
+şi tropicale (grupele stenoterme de Hyperiidae). Cele mai multe amfipode trăiesc pe litoral,
+numai Hyperiidele şi alte câteva specii sunt pelagice (Cărăuşu et al., 1955).
+ Majoritatea speciilor de amfipode sunt stenohaline, dar există şi câteva specii exclusiv
+eurihaline ce tolerează niveluri diferite de salinitate a apei (Gammarus locusta, Calliopius
+laeviusculus). Izolat se găsesc şi specii marine în ape dulci (Ampelisca pusilla, Pontopeira
+affinis), arătând faptul că speciile de apă dulce s-au format din cele marine (Cărăuşu et al.,
+1955).
+ Pe plan mondial, aproximativ 1900 de specii sunt dulcicole (Väinölä et al. 2008). Acestea
+trăiesc în fluvii, râuri, lacuri, bălţi (mai ales pe margine sub pietre, frunze căzute, plante
+acvatice etc.), ape subterane (puţuri, freatic aluvional, peşteri) (Niphargus, Bogidiella), unele
+fiind larg răspândite. În aceste ape trăiesc diferite specii aparţinând mai multor familii
+(Calliopiidae, Talitridae, Corophiidae, Gammaridae etc.), cele mai multe specii aparţinând
+însă Gammaridelor, acestea fiind cosmopolite în apele dulci (ubicviste) (Cărăuşu et al.,
+1955).
+ Unele Talitride părăsesc apele şi pot vieţui un timp îndelungat în mediul terestru, Acestea
+se ascund în nisipul de pe coaste, sau sub pietre, frunze putrede, sol umed, afânat, aflate la
+distanţe mari de apă (Orchestia cavimana) (Cărăuşu et al., 1955). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+8
+ În timp ce speciile marine și de apă dură ating cu ușurință nevoia de Ca, speciile de apă
+necalcaroasă prezintă o răspândire influențată de Ca (Rukke, 2002).
+ În ultimele decenii multe ape europene, atât curgătoare cât și lacuri, au fost invadate de
+numeroase specii predominant din Bazinul Ponto-Caspic, dar și din regiunea mediteraneană.
+Aceste specii se răspândesc prin canalele artificiale ce leagă sistemele marilor râuri și prin
+intermediul transportului naval. Invadatori de succes s-au dovedit a fi specii din genurile
+Dikerogammarus și Echinogammarus (Kinzler et al., 2009).
+ Fauna ţării noastre cuprinde în majoritate forme caspiene şi de apă dulce (epigee şi
+hipogee), dar se găsesc şi forme marine. Majoritatea speciilor trăiesc în Delta Dunării
+deoarece ele evită atât apa cu o salinitate ridicată, cât şi cele dulci interioare (Cărăuşu et al.,
+1955).
+1.3. Ecologia amfipodelor
+ Amfipodele din regiunea noastră trăiesc în ecosisteme cu biotop diferit. Astfel acestea se
+împart în mai multe grupe: petrofile, care trăiesc sub pietrele din zona litorală
+(Dikerogammarus villosus bispinosus, Pontogammarus obesus, Chaetogammarus tenellus
+major), psamofile, ce trăiesc în nisipul litoral şi al limanurilor (Pontogammarus maeoticus,
+P. Abbreviatus borceae), de funduri nisipo-mâloase (Chaetogammarus warpachowskyi,
+Gmelina pusilla), iliofile, ce trăiesc pe fund mâlos (Niphargoides intermedius), euriece
+(Chaetogammarus tenellus behningi) (Cărăuşu et al., 1955).
+ Amfipodele se pot mişca în diferite moduri ceea ce determină şi o modificare a
+morfologiei externe. Astfel cele ce se mişcă liber pe substrat au plăcile coxale ce protejează
+branhiile şi camera incubatoare mult lăţite; formele ce se înfundă în nisip au unele articole
+ale pereiopodelor exagerat lăţite; formele agăţătoare au plăcile coxale reduse (Podoceridae)
+sau absente (Caprellidae); speciile săritoare au uropodele dezvoltate; cele înotătoare au
+articolele bazale ale pleopodelor lăţite, iar uropodul III şi telsonul formează o înotătoare
+codală. Mai există şi specii ce înaintează pe substrat culcate pe o latură (Rivulogammarus).
+Unele specii trăiesc pe alge sau printre coloniile de animale, iar altele trăiesc în tuburi libere
+sau fixate, ce sunt constituite din corpuri străine cimentate cu ajutorul secreţiei glandelor de
+la baza pereiopodelor (Cărăuşu et al., 1955). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+9
+ Hrana amfipodelor este reprezentată de substanţe vegetale, animale sau detritus. Cele ce
+consumă hrană vegetală nu pot fi considerate strict fitofage deoarece ele consumă deodată şi
+fauna plantelor acvatice. Există şi specii prădătoare cum ar fi Ampeliscidele şi Hyperiidele
+neparazite ce trăiesc în adâncimile mijlocii ale mărilor. În apele pe a căror fund se găsesc
+substanţe organice din belşug, provenite mai ales din descompunerea cadavrelor, amfipodele
+se înmulţesc în masă. Formele cavernicole abundă de obicei în locurile bogate în guano
+(Cărăuşu et al., 1955).
+ Amfipodele prezintă diferite mijloace de apărare: se ascund cu uşurinţă pe sub pietre, în
+mâl, nisip datorită mobilităţii ridicate; prezintă ţepi pe corp ce sunt în legătura cu glande cu
+venin (specii de Cyphocaris); formele care trăiesc pe alge prezintă diferite coloraţii datorită
+cromatoforilor (Caprellidae); autotomia (Cărăuşu et al., 1955). S-a observat la o specie de
+amfipode existența unor feromoni de alarmă. Acești feromoni de alarmă, sau kairomoni, au
+rol în evaluarea riscului de prădare și sunt substanțe chimice ce determină schimbări
+comportamentale în amfipodele conspecifice care recepționează semnalul. Semnalul detectat
+de un individ indică faptul că un conspecific a fost recent capturat și rănit de un prădător în
+imediata învecinătate a acestuia. O posibilă cauză a existenței acestor substanțe chimice este
+vizibilitatea redusă în habitatele acvatice datorită nivelelor scăzute de lumină, turbiditate și
+vegetație densă (Wudkevich et al., 1997).
+ Amfipodele pot trăi în comensalism ocazional cu alte specii, de exemplu Melita obtusata
+trăiește printre ambulacrele unor stele de mare, iar Hyperiidele sub umbrela sau în camera
+gastrală a meduzelor, etc. (Cărăuşu et al., 1955).
+ Colectarea cu succes a hranei este critică pentru fiecare organism pentru a furniza energia
+esențială pentru întreținere, creștere și reproducere. Multe organisme trebuie să echilibreze
+beneficiile hrănirii cu riscurile asociate cu prădarea. Prădarea impune o presiune selectivă
+asupra speciilor prădate care sunt nevoite să își dezvolte mecanisme care reduc riscul de a fi
+mâncate (De Lange et al., 2005).
+ Există și specii parazite și prădătoare de amfipode, mai exact Phronimidele. Acestea
+trăiesc în cavitatea cloacală a coloniilor de Tunicieri pelagici cărora le consumă carnea,
+învelișul servindu-le drept locuință femelelor și puilor. Lafystius sturionis este un amfipod 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+10
+strict parazit ce trăiește pe pielea peștilor. Ciamidele sunt tot amfipode strict parazite, dar pe
+pielea Cetaceelor, care prezintă și modificări morfologice accentuate cum ar fi corpul scurt și
+turtit, antene reduse și picioare transformate în căngi (Cărăuşu et al., 1955).
+ Unele amfipodele pot fi gazde intermediare pentru unii paraziți cum ar fi Trematode,
+Cestode, Acantocefali, iar altele pot prezenta pe ele colonii de ciliate (Vorticella, Carchesium
+și diferiți Acinetieni) (Cărăuşu et al., 1955). De exemplu Gammarus roeseli este
+gazda intermediară a parazitului acantocefalian Polymorphus minutus. Acest parazit
+influențează comportamentul pentru a favoriza transmisia la gazda finală, în general o
+pasăre. (Médoc et al., 2006) Un alt exemplu este Gammarus duebeni care este gazda
+parazitului microsporidian efeminizator Nosema granulosis care transformă masculii
+în femele funcționale (Rodgers-Gray et al., 2004).
+1.4. Morfologia și anatomia amfipodelor
+ Amfipodele au corpul alcătuit din trei segmente: cap, torace şi abdomen. Acestea sunt
+acoperite cu o cuticula chitinizată, ușor transparentă, ce poate fi impregnată, mai mult sau
+mai puțin, cu carbonat de calciu. Această cuticulă este secretată de un epiteliu chitinogen care
+este prevăzut cu glande tegumentare. Secreția acestor glande este utilizată de amfipode în
+diferite feluri: în protecția împotriva uscării și consolidarea galeriilor săpate în nisip, la
+Talitride ce posedă glande pe toată suprafața corpului; în construcția unor căsuțe prin lipirea
+unor firișoare de alge, nisip etc., la specii ce au o secreție lipicioasă secretată de glande
+glutinifere, formate din celule ce se deschid în vârful dactilului pereiopodelor I-II (Jassidae)
+sau I-IV (Ampeliscidae). La unele Caprelide și Phronimide, există niște glande unicelulare,
+prezente pe propoditul sau carpopoditul gnatopodului II, ce se deschide în vârful unor spini și
+sunt socotite veninoase (Cărăuşu et al., 1955).
+1.4.1. Morfologia externă
+ Capul, de obicei, este mai mic decât corpul, dar există şi excepţii, cum ar fi la Phironima
+sp. unde poate atinge dimensiuni foarte mari. În timpul dezvoltării embriologice segmentul
+cefalic, la origine, este format din 7 segmente libere ce se contopesc mai târziu. Uneori la cap
+aderă şi primul (Gammaridea) şi al doilea (Caprellidea) segment toracic formând împreună
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+11
+cefalotoracele sau cefalosomul. Marginea superioară a scutului cefalic se poate prelungi între
+bazele antenelor din prima pereche sub forma unei excrescenţe mai mult sau mai puţin lungă
+şi ascuţită, numită rostru frontal. De cele mai multe ori, pe laturile scutului cefalic şi pe
+marginea lui anterioară se observă nişte prelungiri de forme diferite, situate între bazele
+antenelor superioare şi inferioare, denumite lobi laterali sau lobi oculari, pe care se găsesc
+situaţi ochii. Posterior inserţiei antenelor inferioare, uneori se distinge câte o prelungire
+ascuţită, numita unghi postantenar sau unghi posterior. Pe faţa ventrală a capului se găseşte
+orificiul bucal, în vecinătatea căreia se află piesele bucale: labrum (buza anterioară) înaintea
+gurii şi labium (buza posterioară) pe partea opusă a gurii, ce nu sunt apendice propriu-zise, ci
+nişte formaţiuni tegumentare ce sunt prelungiri ale părţii anterioare ale tubului digestiv. Se
+deosebesc 4 perechi de apendice bucale propriu-zise ce au rol masticator: o pereche de
+mandibule, 2 perechi de maxile (maxilele I şi II) şi o pereche de maxilipede (Cărăuşu et al.,
+1955).
+ Apendicele bucale cu rol principal în masticaţie sunt reprezentate de mandibule (Cărăuşu
+et al., 1955). La majoritatea amfipodelor toate componentele mandibulei sunt bine
+dezvoltate, acest ti de mandibulă numindu-se tip gamaridian de bază (Mekhanikova, 2010).
+Mandibulele sunt formate din corpul mandibulei de care uneori se prinde un palp mandibular.
+Corpul mandibulei este reprezentat de o piesă masivă puternic chitinizată, ce prezintă o
+margine tăioasă (pars incisiva) formată dintr-o prelungire zimţuită, astfel încât dinţii de pe o
+mandibulă se prind cu dinţii de pe mandibula opusă. Pe marginea tăioasă, uneori se mai poate
+distinge o lamelă accesorie. Această lamelă este de asemenea zimţuită şi inegal dezvoltată pe
+cele două mandibule, putând lipsi de pe cea dreaptă. Înapoia marginii tăioase se află o
+proeminenţă numită procesul molar. Acesta are pe suprafaţa sa rânduri de ţepi dispuşi ca la o
+pilă. Între procesul molar şi marginea tăioasă se află un rând de spini ciliaţi şi zimţuiţi. Palpul
+mandibular este de obicei format din trei articole. Articolele palpului mandibular pot varia
+atât ca formă, cât şi ca dezvoltare, iar ca număr pot fi mai puţine sau să lipsească complet, ca
+la Talitride şi unele Caprelide (Cărăuşu et al., 1955). La unele familii de amfipode se observă
+o înaltă specializare a aparatului bucal în funcție de tipul particular de hrană consumată.
+Această specializare constă fie în reducerea unor părți, fie în supradezvoltarea lor, sau chiar
+atrofierea întregului aparat bucal (Mekhanikova, 2010). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+12
+ Maxilele sunt prezente sub formă de două perechi: maxilele anterioare, numite şi maxile I
+sau maxilule, şi maxilele posterioare sau maxile II. Ambele perechi de maxile au aspectul
+unei piese lamelare. Maxila anterioară este formată dintr-o parte bazilară şi un palp. Partea
+bazilară e formată la rândul ei din 3 articole mici (omoloage propoditului) din care al doilea
+prezintă o prelungire lamelară numită lob intern. Acest lob intern poartă pe marginea internă
+un rând de peri simplii şi ciliaţi, care la Niphargide e îngust şi poartă doar peri apicali. Al
+treilea articol se prelungește într-un lob extern mai dezvoltat decât cel intern, care poartă în
+vârf un rând de țepi sau spini dințați. Palpul, considerat ca endopodit, se fixează de acest
+ultim articol. Palpul este de obicei biarticulat, dar poate fi format și dintr-un singur articol
+(Dexaminidae), sau alteori lipsind complet (Talitridae). Maxila posterioară este alcătuită din
+două piese lamelare: doi lobi (intern și extern) articulați între ei, palpul lipsind. Lobii prezintă
+pe vârful lor peri sau țepi subțiri. Lobul intern, de cele mai multe ori, poartă de-a lungul
+marginii sale interne un rând oblic de peri mai lungi (Cărăuşu et al., 1955).
+ Alături de apendice bucale capul mai prezintă alte două perechi de apendice numite
+antene. Acestea nu sunt identice și perechea I este uneori mai lungă decât perechea II, iar
+alteori perechea I este mai scurtă (Talitride). Antenele superioare, numite și antene I sau
+antenule, sunt compuse dintr-o parte bazală numită peduncul și un flagel principal, ce poate fi
+însoțit uneori de un flagel mai mic, flagel accesoriu. Pedunculul este format din 3 articole,
+numai la Hyperiide este format din 1, 2 sau 4. Flagelul principal are o lungime ce variază în
+funcție de specie, putând avea până la 350 de articole, iar flagelul accesoriu, când există, este
+de obicei mai scurt. Antenele inferioare sunt formate dintr-un peduncul, format frecvent din 5
+articole, și un singur flagel. La Talitride primul articol al pedunculului poate fi contopit cu
+capul, iar la Caprelide există doar 4 articole, primele două fiind unite. Cel de-al doilea articol
+al pedunculului este ușor de recunoscut datorită prezenței pe acesta a unui con glandular
+(prelungire conică) în vârful căruia se deschide glanda antenară, excretoare. Flagelul are o
+lungime variabilă și este formată din articole ce sunt uneori în număr mai mare de 100.
+Uneori antena poate prezenta un pronunțat dimorfism sexual, fiind mult mai puternică la
+mascul decât la femelă. La Corophiide articolele pedunculului se transformă într-un aparat de
+apucat. Pe articolele flagelului, pe lângă perii obișnuiți, se mai pot găsi și niște formațiuni
+senzitive, denumite bastonașe hialine și calceole (Cărăuşu et al., 1955). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+13
+ Toracele, numit și mesosom sau pereion, este format din 6 – 7 segmente libere numite
+toracomere. Acestea pot avea suprafața dorsală netedă (cele mai multe Gamaride), pot
+prezenta, atât dorsal cât și lateral, diverse prelungiri spinoase și gheburi, sau poartă și ventral
+țepi îndreptați înainte (Microdeutopus sp., Ampelisca sp.). Tot pe partea ventrală a toracelui
+se deschid și orificiile genitale: la mascul pe ultimul segment toracic, iar la femelă pe
+antepenultimul (Cărăuşu et al., 1955).
+ De toracomere se prind lateral apendicele toracice reprezentate de: maxilipede,
+gnatopode și pereiopode. Maxilipedele sunt considerate ca făcând parte din piesele bucale
+deoarece intervin în procesul masticației. Acestea se articulează la primul segment toracic
+care este contopit cu capul. Maxilipedele nu diferă mult, din punct de vedere structural, de
+restul apendicelor toracice. Astfel acestea sunt formate de obicei din 7 segmente. Primul
+articol, coxopoditul, este contopit cu cel simetric. Al doilea articol, basipoditul, formează cu
+coxopoditul pedunculul numit protopodit. Basipoditul prezintă o prelungire lameliformă
+internă, numită lob intern, prevăzută pe marginea internă și în vârf cu peri și uneori cu țepi.
+Basipoditele, în cazuri rare, pot fi concrescute într-o placă mediană nepereche (Hyperiidae).
+Următoarele articole ale maxilipedului (ischio-, mero-, carpo-, pro- și dactilopodit) formează
+endopoditul. Ischiopoditul formează o prelungire membranoasă numită lob extern. Celelalte
+4 articole alcătuiesc palpul maxilipedului care poate lipsi la câteva specii (Hyperiidae).
+Acesta este alcătuit din articole ce variază în funcție de gen și specie, doar dactilopoditul are,
+de obicei, conformația unei gheare (Cărăuşu et al., 1955).
+ Următoarele 7 perechi de apendice toracice, numite și toracopode, sunt descrise sub
+diferite denumiri: pereiopode numerotate de la I la VII; conform funcției pe care o
+îndeplinesc, gnatopode I și II (cu rol prehensil) și pereiopode I – V cu rol în deplasare.
+Aceste apendice toracice sunt formate din 7 articole: coxo-, basi-, ischio-, mero-, carpo-, proși dactilopodit. Articolul coxal este puternic dilatat, mai ales la primele 4 perechi, alcătuind
+placa coxală ce se articulează de segmentul toracic printr-un capăt, ca o continuare a acestuia.
+Pe fața internă a acestor plăci coxale se prind atât lamele branhiale cât și cele incubatoare ce
+le atribuie rolul de apărare a branhiilor și ouălor. Plăcile coxale pot fi mult dezvoltate
+(Metopa spectabilis), reduse sau lipsesc complet (Caprellidae) (Cărăuşu et al., 1955). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+14
+ Gnatopodele prezintă o conformație aparte datorită rolului lor în apucarea hranei și a
+femelei: articolele 3 – 5 sunt scurte, articolul 6 este puternic dilatat, iar dactilul este lung și
+mobil, îndreptat înapoi. Cu rare excepții (Microdeutopus sp.), propoditul gnatopodului I este
+mai mic decât cel al gnatopodului II, dar prezintă aceeași alcătuire: forma este trapezoidală,
+mai rar dreptunghiulară sau ovală, iar suprafața pe care se așează dactilul, numită palm sau
+margine palmară, este delimitată față de marginea posterioară a propoditului printr-un unghi
+palmar. Pe acesta se găsesc țepi, numiți și spini palmari sau spini prehensili. Gnatopodele ce
+prezintă această conformație se numesc subchelate. Există însă și gnatopode chelate la care
+propoditul prezintă o prelungire, care împreună cu dactilul formeazăo adevărată pensă
+(Chelura sp., Synchelidium sp., Kröyera sp.). Gnatopodele variază și în funcție de sex astfel
+încât la mascul este, de obicei, mai puternic dezvoltate decât la femelă, sau pot exista
+deosebiri structurale ce permit ușoara recunoaștere a sexelor (Talitridae) (Cărăuşu et al.,
+1955).
+ Pereiopodele nu sunt uniform alcătuite, de aceea acestea se împart în grupa anterioară de
+pereiopode (I și II) și grupa posterioară de pereiopode (III, IV și V). Pereiopodele I și II sunt
+foarte asemănătoare, astfel încât ele nu se deosebesc decât prin placa coxală a pereiopodului
+II care este mai dezvoltată și este scobită posterior. Articolele bazale sunt cilindre și înguste
+de obicei, dar pot fi lățite, ovale și prevăzute cu glande glutinifere ce au rol în construirea
+tuburilor – cuib (la Amfitoide, Corofiide, etc.). Dactilul este îndreptat în jos și înapoi. Aceste
+apendice toracice servesc mersului propriu-zis. Acestea pot prezenta dimorfism sexual prin
+prezența pe pereiopodele I și II a masculului a unor peri deși, sau pot lipsi complet la
+Caprelide, cu excepția genului Phtisica. Pereiopodele III – V sunt mai lungi decât cele
+precedente, creșterea în lungime începând cu pereiopodul III. Plăcile coxale ale acestor
+pereiopode sunt mai puțin dezvoltate decât cele de la grupa anterioară de pereiopode. Acest
+lucru este compensat prin lățirea articolelor bazilare ce contribuie la protejarea cavității
+respiratorii și incubatorii. Curbura piciorului formează un unghi cu deschidere înapoi, iar
+dactilul este orientat înainte, prezentând numeroase variații date de modul de viață al speciei.
+Astfel acestea pot fi: dezvoltate potrivit – la speciile înotătoare sau cele ce trăiesc pe un fund
+tare; reduse – la speciile ce se îngroapă în substrat (Pontogammarus sp., Niphargoides sp.,
+Bathyporeia sp.); puternic dezvoltate – la formele ce se agață de alge (Caprellidae); foarte 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+15
+puternic dezvoltate – la speciile ce trăiesc fixate pe pielea altor animale (Cyamidae). Rarerori
+pereiopodele toracice pot lipsi sau sunt cu totul rudimentare (Pseudolirius sp. dintre
+Caprellidae) (Cărăuşu et al., 1955).
+ Abdomenul, numit și pleon, este bine dezvoltat la majoritatea Amfipodelor. La Caprelide
+însă acesta este foarte redus sau lipsește complet segmentația și apendicele. Pleonul este
+format din două regiuni distincte: metasom și urosom (Cărăuşu et al., 1955).
+ Metasomul cuprinde primele trei segmente ce urmează după torace. Aceste segmente sunt
+bine dezvoltate. Acestea se prelungesc lateroventral cu niște plăci numite epimere sau plîci
+epimerale. Forma și, mai ales, conformația marginii posterioare a celei de-a treia, care poate
+fi dreaptă, scobită, zimțuită etc., are o mare importanță în sistematică. Segmentele
+metasomului, deseori, se prelungesc pe fața dorsală cu proeminențe ascuțite ca la
+Paramphithoe sp., Nototropis sp., Melita sp. sau rotunjite ca la Gammarellus sp. De
+segmentele metasomului sunt prinse niște apendice numite pleopode sau picioare înotătoare.
+Acestea sunt în număr de trei perechi și sunt foarte asemănătoare ca structură, chiar la
+reprezentații aceleiași familii. Pleopodele sunt apendice de tip biramat. Acestea au un singur
+articol bazal și două ramuri, una externă și una internă, ce corespund endo- și exopoditului.
+Acestea sunt formate din 3 până la 30 de articole, fiecare articol purtând peri lungi ciliați care
+sunt peri înotători. Pleopodele din aceeași pereche se pot mișca împreună, deoarece
+pedunculii lor poartă spini dințați, numiți retinacule, care se angrenează între ei. Aceste
+apendice se află în continuă mișcare ce le conferă rolul de a realiza înotul și de a crea un
+curent de apă proaspătă spre branhii și spre ouăle din camera incubatoare. La Caprelidae
+pleopodele sunt rudimentare la masculi și lipsesc la femele (Cărăuşu et al., 1955).
+ Urosomul este format tot din trei segmente, mai mici decât cele ale metasomului, dar
+acestea nu sunt prelungite niciodată cu epimere. Segmentele urosomului sunt uneori parțial
+sau total contopite ca la unele Corofiide, Synurella sp. Segmentele urosomului poartă deseori
+pe partea lor dorsală spini, țepi, peri, așezați în grupări caracteristice. Orificiul anal se
+deschide pe ultimul segment al urosomului. Segmentele urosomului poartă niște apendice
+numite uropode, care, în general, sunt în număr de trei perechi. Numărul de uropode se poate
+reduce și la două perechi, prin contopirea segmentelor urosomului. Uropodele sunt formate 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+16
+dintr-un peduncul și două ramuri. Uropodul III este uneori uniramat, având doar ramura
+externă. Ramurile sunt rigide, nearticulate de obicei, și prevăzute cu spini. Uropodul III poate
+avea ramura externă biarticulată, articolul distal fiind mult mai mic decât cel proximal în
+majoritatea cazurilor. Uropodele, ca funcție, servesc pentru sărit. Uropodul III are uneori rol
+de cârmă, luând astfel forma unei lame, ca urmare a acestei funcții. Alteori, uropodele sunt
+lățite și dințate pe margini. Astfel de uropode se găsesc la Chelura sp. care au probabil
+legătura cu triturarea lemnuluiîn care trăiește acest amfipod (Cărăuşu et al., 1955).
+ Telsonul se prezintă ca o placă fixată de ultimul segment abdominal. Unii autori îl
+consideră un apendice, iar majoritatea îl consideră al XXI-lea segment al corpului. Forma
+telsonului variază destul de mult: de la o simplă lamă ascuțită, dreaptă sau ușor scobită la
+vârf, până la o formă bilobată ca la majoritatea speciilor familiei Gammaridae. De obicei,
+telsonul poartă peri cu spini, atât pe margini, cât și în vârf, numiți spini marginali, distali sau
+apicali (Cărăuşu et al., 1955).
+Fig. 1 Morfologia externă a unui amfipod gammaridian Leucothoe incisa (de Hans
+Hillewaert) 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+17
+1.4.2. Organizaţia internă
+ Aparatul digestiv se prezintă sub forma unui tub aproape drept, ce începe cu gura. După
+gură urmează intestinul anterior, numit stomodeum, reprezentat printr-un scurt esofag, apoi o
+ușoară dilatare, care este stomacul masticator, care este căptușit cu peri și țepi, ce au rol în
+fărâmițarea alimentelor. Glandele salivare sunt prezente la toate grupele de amfipode.
+Mesenteronul, ce se întinde până la începutul abdomenului anterior, prezintă dorsal un
+diverticul orb, numit cec piloric, care proemină deasupra stomacului, iar ventral se află
+tuburile hepatopancreatice, ce se află în număr de 4 la Gammaridae și în număr de 2 la
+Caprellidae. La unirea mesenteronului cu intestinul posterior, numit proctodeum, se deschide
+dorsal o pereche de cecumi, care, după conținut și legăturile cu sistemul circulator, au rol
+excretor. Intestinul posterior se termină printr-un anus, situat la extremitatea ultimului
+segment al urosomului, dedesubtul inserției telsonului (Cărăuşu et al., 1955).
+ Aparatul circulator este alcătuit dintr-o inimă închisă în pericard, două aorte și un sistem
+lacunar. Inima are forma unui tub cilindric, contractil, ce este așezat dorsal, imediat sub
+tegument. Ca întindere, este limitată la segmentele mesosomului și se prelungește prin două
+artere: una anterioară, sau cefalică, și una posterioară. Comunică cu pericardul prin trei
+perechi de orificii sau ostii, sau printr-o singură pereche, dar numai excepțional la
+Corophium și majoritatea Hiperienilor. Extremitățile distale ale aortelor se deschid în sinusul
+ventral, numit și sternal (Cărăuşu et al., 1955).
+ Aparatul respirator este alcătuit din lame respiratoare fixate una câte una pe fața internă a
+plăcilor coxale ale apendicelui mesosomului. Forma acestor lame este ovală, iar suprafața, de
+obicei netedă. Totuși, la unele genuri cum ar fi Dexamine, Nototropis, apar pe suprafața
+lamelor niște cute secundare, care pot lua o dezvoltare destul de mare. La Talitride, lamele
+respiratoare sunt mai reduse datorită modului de viață amfibiu. Funcția respiratoare a acestor
+lame este completată, probabil, printr-o intensă respirație tegumentară. Lamele respiratoare
+sunt omoloage epipoditelor, iar numărul lor este supus unor variații specifice destul de mari.
+Astfel, la majoritatea Amfipodelor, ele sunt prezente începând de la gnatopodul II, până la
+pereiopodul IV, uneori și pe pereiopodul V. La unele Corophiide, mai ales la femele, lamele
+lipsesc și de pe gnatopodul II. La Caprellidae, reducerea este și mai puternică, la Phtisica
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+18
+existând doar 3 perechi, în timp ce, la celelalte genuri, lamele există doar pe segmentele II și
+IV, care sunt lipsite de pereiopode (Cărăuşu et al., 1955).
+
+Fig. 2 Lamă respiratoare la G. b. dacicus (foto original)
+ Principalul rol în excreție îl au cele două glande antenare, situate la baza antenelor
+posterioare. Fiecare din acestea este reprezentat printr-un tub nefridian foarte încolăcit, ce
+comunică printr-un capăt cu cavitatea generală din regiunea cefalică, iar cu celălalt capăt
+deschizându-se la exterior, în vârful unei prelungiri a articolului 2 din pedunculul antenei
+posterioare, numit con glandular. Celulele excretorii, numite nefrocite, se mai găsesc grupate
+pe toate plăcile coxale ale mesosomului și în parte pe acelea ale urosomului. Aceste
+aglomerări de celule excretoare, numite glande coxale, sunt scăldate de sângele ce se întoarce
+de la picioare spre inimă. La Gamaridele de apă dulce, au rol în excreție și unele celule
+mesodermale (Cărăuşu et al., 1955).
+ Sistemul muscular este reprezentat prin mușchi antagoniști: flexori și extensori. În
+segmentele trunchiului, mușchii extensori sunt situați dorsal, în timp ce mușchii flexori, în
+număr mult mai mare, sunt dispuși spre partea ventrală a segmentelor. Musculatura
+trunchiului este cu atât mai puternic dezvoltată, cu cât animalul este un mai bun înotător. La
+speciile care sar, adică la Talitridae, mușchii urosomului sunt mai dezvoltați. Apendicele au
+musculatura alcătuită, de asemenea, din mușchi flexori, situați în lungul marginii posterioare
+a articolelor, și mușchi extensori, ce se întind în lungul marginii anterioare a articolelor. Cei 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+19
+mai puternici mușchi ai apendicelor sunt, de obicei, mușchii din propoditul gnatopodelor și
+din articolul bazal al pleopodelor (Cărăuşu et al., 1955).
+ Sistemul nervos la Amfipode este alcătuit după tipul artropodian și se poate împărți în
+centrii nervoși și nervi. Centrii nervoși sunt reprezentați de o masă nervoasă preorală, situată
+dorsal, denumită ganglioni cerebroizi, de un ganglion subesofagian postoral și de o catenă
+ganglionară ventrală.Uneori poate avea loc contopirea unora dintre ganglioni, de exemplu a
+ganglionului gnatopodului II cu cel subesofagian, sau la Caprellidae, în cazul reducerii
+abdomenului, toți ganglionii acestuia fuzionează într-o singură masă (Cărăuşu et al., 1955).
+ Organele de simțuri, la Amfipode, sunt reprezentate de: ochi, statociste, peri senzitivi,
+bastonașe hialine, peri olfactivi, organele lui Leydig, calceole (Cărăuşu et al., 1955).
+ Ochii sunt sesili și se află dispuși pe lobii laterali ai capului. Uneori aceștia sunt dispuși
+pe partea dorsală sau sunt contopiți. Ca formă, ochii sunt de cele mai multe ori reniformi, mai
+rar circulari. Numărul ochilor este, în majoritatea cazurilor, de o pereche, cu excepția unora,
+cum ar fi la Ampeliscidae, la care se observă câteodată împărțirea fiecărui ochi în două mase
+izolate, alcătuind astfel două perechi de ochi. La Hyperiidae, se observă o dezvoltare uriașă a
+ochilor, care ocupă cea mai mare parte a ochilor, iar la Niphargus, Bogidiella, se observă o
+reducere până la dispariție a ochilor. Ochii sunt compuși și situați sub carapace, iar cuticula
+de deasupra lor devine transparentă, fără a prezenta însă o împărțire în fațete. Fiecare element
+senzorial alcătuiește o omatidie, al cărei număr este destul de ridicat, care este acoperită la
+exterior de o cornee transparentă, multistratificată cu fațete. Corneea este secretată de două
+celule per omatidie care formează împreună cu patru celule conice aparatul dioptric al
+ochiului. Pe fiecare celulă conică, pe partea lor proximală, se găsește un grup de celule
+retinale cu specializări membranare numite rhabdomere, care sunt elementele receptoare ale
+luminii, care conțin fotopigmentul și care sunt legate prin filete nervoase de ganglionul
+cerebroid. Rareori, se observă apariția unui cristalin comun, prin îngroșarea cuticulei de
+deasupra ochiului, sub forma unei lentile (Ampeliscidae) (Cărăuşu et al., 1955; MeyerRochow, 2001). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+20
+
+Fig. 3 Ochii la G. b. dacicus și S. ambulans (foto original)
+ Statocistele sunt organe situate în partea antero-posterioară a capului. Acestea sunt
+alcătuite dintr-o vezică în care se găsește unul sau mai multe otolite. Statocistele sunt
+inervate de ganglionul cerebroid și au probabil rol în simțul echilibrului. Acestea se întâlnesc
+la specii de Gammaridae și la Caprella sp. (Cărăuşu et al., 1955).
+ Apendicele Amfipodelor poartă numeroși peri, ce pot avea mai multe forme: simpli,
+ramificați, penați etc. Experiențele au arătat că, cel puțin perii de pe vârful antenei I sunt
+senzitivi, mai precis tactili, ajutând animalul să se orienteze prin pipăit (Cărăuşu et al., 1955).
+ Bastonașele hialine, perii olfactivi sau organele lui Leydig se găsesc câte 1-2 sau chiar
+mai multe pe colțul inferodistal al unor articole din flagelul antenei I. Ele se prezintă în
+general ca niște formații cilindrice, rotunjite la capătul lor distal și cu pereți membranoși
+foarte fini. Fiecare bastonaș primește câte o ramificație a nervului antenar și se pare că aceste
+organe intervin in percepția excitațiilor chimice (Cărăuşu et al., 1955).
+ Calceolele sunt organe de simț situate, la unele specii și, mai ales, la masculii adulți, pe
+articolele și uneori și pe pedunculul antenei II. Forma calceolelor este variată, având de
+obicei forma unei vezici sferice sau ovale, cu pereții foarte subțiri și susținută de un
+peduncul. Rolul acestor organe se pare că este de a ușura găsire femelelor, sau, după Della
+Valle, ele sunt simple ornamentații, făcând parte din haina nupțială a masculilor. La
+Synurella calceolele au formă foliacee, sunt mari și au fost denumite de Wrześniowski
+organele lui la Valette (Cărăuşu et al., 1955). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+21
+ La Amfipode, sexele sunt separate, iar glandele genitale perechi se aseamănă la cele două
+sexe, atât ca poziție cât și ca formă externă (Cărăuşu et al., 1955). Gonadele sunt organe
+tubuloase situate într-o poziție dorsolaterală, imediat deasupra intestinului mijlociu și sub
+inimă, în segmentele 2 până la 7 toracice. Acestea, precum și ouăle, sunt viu colorate de
+pigmenți carotenoizi (Sutcliffe, 1992).
+ În segmentul toracic VI, testiculele se continuă posterior printr-un canal deferent, care se
+dilată formând un rezervor spermatic, numit și veziculă seminală, de la care pleacă câte un
+canal ejaculator scurt, ectodermic, ce se deschide pe partea ventrală a ultimului segment
+toracic, în vârful unor papile numite penis, pe partea ventrală a segmentului VII toracic
+(Cărăuşu et al., 1955; Sutcliffe, 1992).
+ Ovarele variază ca lungime în funcție de starea de maturare. Acestea se deschid la
+exterior prin două oviducte înguste, înfășurate în jurul intestinului și cecumului, la baza plăcii
+a V-a coxale. În interiorul fiecărui ovar se dezvoltă un singur șir de oocite mari, dintr-un strat
+de celule dreptunghiulare numite oogonii. Deoarece diametrul oocitelor este de câteva ori
+mai mare decât cel al oviductelor, cele din urmă se extind pentru a permite trecerea ouălor
+atunci când acestea sunt eliminate în marsupiul ventral. Această întindere a oviductelor poate
+avea loc doar atunci când pereții acestora sunt flexibili, adică imediat după năpârlire
+(Sutcliffe, 1992).
+Fig. 4 Organizația internă a unui amfipod (desen Denis Copilaș-Ciocianu) 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+22
+ Amfipodele prezintă un hormon ovarian permanent, secretat probabil de celulele
+foliculare primare ale ovarului, care controlează dezvoltarea oostegitelor ce formează
+marsupiul. Un hormon ovarian temporar este probabil secretat de celulele foliculare
+secundare și acesta controlează dezvoltarea caracterelor sexuale temporare ca setele lungi ale
+oostegitelor (Sutcliffe, 1992).
+ Femelele prezintă 4 perechi de lame incubatoare sau oostegite, care delimitează cavitatea
+incubatoare, numită marsupiu. Aceste lame se găsesc pe plăcile coxale ale gnatopodului II,
+până la pereiopodul III. La Caprelide numărul lor este de 2 perechi. Lamele incubatoare au
+formă oval-alungită, mai îngustă la bază și sunt prevăzute pe margini cu peri lungi, care ajută
+la reținerea ouălor și juvenililor. Lamele incubatoare se inseră mai intern decât lamele
+respiratoare, care rămân astfel suspendate și scăldate activ de curentul apei (Cărăuşu et al.,
+1955).
+
+Fig. 5 Oostegite la femelă de G. b. dacicus (foto original)
+1.5. Reproducerea și dezvoltarea amfipodelor
+ Amfipodele prezintă, în majoritatea cazurilor, un dimorfism sexual. Masculii se recunosc
+după ochii mai dezvoltați, după pilozitate și mărimea antenelor, precum și după prezența
+anumitor organe senzitive (calceole, organele lui la Valette etc.) (Cărăuşu et al., 1955).
+ La Gammaridele de apă dulce, înainte de împerechere, masculul se prinde de femelă cu
+ajutorul perechii I de gnatopode, de primele plăci coxale. În această poziție, femela poate
+înota cu ușurință purtând masculul pe spate. În momentul copulației, care are loc după o 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+23
+năpârlire a femelei, masculul răstoarnă femela așezând-o transversal, astfel ca orificiile
+sexuale să coincidă. Copulația, ponta și năpârlirea sunt caracteristice diferitelor genuri
+(Cărăuşu et al., 1955).
+ Spermatiile, formate dintr-o parte cefalică și o coadă, sunt în general imobili, cu excepția
+celor de la Caprelide (Cărăuşu et al., 1955). Înainte de depunerea ouălor, femela acumulează
+o rezervă de materiale precursoare care vor fi folosite la formarea vitellusului, adică a
+gălbenușului de ou. În timpul vitelogenezei, aceste materiale (proteine, carbohidrați, grăsimi)
+sunt transportate în oocite, cu puțin timp înainte de ovulație. Cantitatea totală de vitellus
+depozitată în ouăle dintr-o pontă reprezintă efortul reproductiv al femelei per acea pontă. O
+femelă de o anumită lungime a corpului, în funcție de specie, poate produce fie câteva ouă
+mari, fie mai multe ouă mici (Sutcliffe, 1993).
+ Ouăle au forma ovală, iar numărul lor variază după specii de la 1-2 la 150 și chiar mai
+multe. O creștere a numărului de ovule se observă chiar la aceeași specie, în legătură cu
+vârsta (Cărăuşu et al., 1955). Pentru un grup de specii, numărul de ouă per pontă este invers
+proporțional cu dimensiunea medie a acestora. Dimensiunea medie a ouălor este cea mai
+mare la speciile la care femelele ating maturitatea sexuală la o dimensiune relativ mare a
+corpului. De asemenea dimensiunea ouălor variază și în funcție de sezon, fiind mai mari
+iarna, când temperatura este scăzută (Sutcliffe, 1993).
+
+Fig. 6 Ouă de G. b. dacicus (foto original)
+ Dezvoltarea ouălor are loc astfel: grupuri de oocite se formează secvențial din oogonii în
+ovare. Mai exact la capătul distal al ovarului celule germinale sau gonocite se diferențiază
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+24
+prin mitoză și proliferează în oogonii. Aceste celule trec prin diviziune meiotică și devin
+oocite, dezvoltându-se încet în timpul unui stadiu previtelogenetic în care meioza trece prin
+profază dar se oprește repede în diploten. Urmează expansiunea nucleului și sinteza unor
+organite celulare, de exemplu mitocondrii, în timpul unei perioade de sinteză intensă de
+ARN. Acest stadiu este urmat de unul vitelogenetic, în timpul căruia se formează vitelusul și
+oocitul crește rapid, ajungând la dimensiunea sa finală. Oocitul primar trece prin prima
+metafază în timpul ovulației, formând un oocit secundar în care a dua metafază produce
+condiția haploidă a oocitului nefecundat, numit ou sau ovum. În timpul celei de-a doua
+telofaze, cam la două – trei ore după ovulația în marsupiu, spermiile pot penetra și fertiliza
+ouăle. Metafaza primei mitoze a oului fecundat, diploid, are lo9c la cinci – șapte ore după
+ovulație și la scurt timp după fecundație (Sutcliffe, 1993).
+ Amfipodele prezintă un clivaj holoblastic în timpul dezvoltării incipiente a embrionului.
+După fertilizare, ce are loc în marsupiul femelei, ouăle absorb apă și se umflă, schimbându-și
+forma din rotund în ovoid. Oul își schimbă culoarea în timp ce își mărește dimensiunea și
+trece printr-o serie de stadii de dezvoltare embrionică înaintea eclozării embrionului complet
+dezvoltat. Segmentația oului este, la început, totală, apoi superficială. Când eclozează,
+animalul trece prin corionul extern al oului, folosind spinii de pe urosomul posterior pentru a
+rupe membranele. La ieșirea din ou, Amfipodele diferă puțin de formele adulte, segmentele
+corpului fiind relativ mai late, iar apendicele mai groase. Majoritatea nu prezintă stadii
+larvare, totuși, la familiile Taumatopside și Lanceolide se menționează stadii tinere, altfel
+alcătuite decât adulții, cunoscute sub numele de Physosoma (Cărăuşu et al., 1955; Sutcliffe,
+1993).
+ Hermafroditismul nu se constată la Amfipode. Ca o excepție, s-au găsit la unii masculi de
+Orchestia ovule în glandele testiculare, dar acestea nu ajung la maturitate și nici nu sunt
+evacuate (Cărăuşu et al., 1955).
+1.6. Descrierea speciilor
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus și Synurella ambulans fac
+parte din regnul Animalia, subregnul Eumetazoa, supraîncrengătura Ecdysozoa, încrengătura
+Arthropoda, subîncrengătura Crustacaea, clasa Malacostraca, subclasa Eumalacostraca, 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+25
+supraordinul Peracarida, ordinului Amphipoda, subordinul Gammaridea (Cărăuşu et al.,
+1955).
+Subordinul de crustacee Gammaridea cuprinde peste 4500 de specii, cam 85% din
+ordinul Amphipoda. Amfipodele gamaridiene sunt larg răspândite în ecosisteme marine,
+dulcicole și terestre, față de celelalte trei subordine, Hyperiidea, Ingolfiellidea și Caprellidea,
+care sunt specializate și restricționate ecologic (Macneil et al., 1997).
+ Amfipodele gamaridiene sunt cele mai abundente și mai cunoscute din ordinul
+Amphipoda, reprezentând un grup foarte divers de organisme ce cuprinde, pe plan mondial,
+5700 de specii în 1060 de genuri (Cărăuşu et al., 1955).
+ Amfipodele gamaridiene sunt turtite lateral. Majoritatea sunt bentonice, dar există și
+câteva specii planctonice (Cărăuşu et al., 1955).
+ Amfipodele din subordinul Gammaridea au în general ciclul de viață de doi ani. Acestea
+prezintă fertilizare externă, embrionii fiind purtați de femele între oostegite şi partea ventrală a
+corpului, ceea ce formează un marsupiu (Sainte-Marie, 1991).
+ Morino a propus o clasificare simplă a ciclului de viață a amfipodelor gamaridiene bazată
+pe ritmurile de reproducere, sezoniere sau de-a lungul anului, și longevitate. Astfel el a
+sugerat faptul că tipurile de cicluri de viață sunt distribuite conform latitudinii. El a prezis
+populații semianuale pentru regiunile tropicale, populații anuale pentru regiuni temperate și
+bianuale sau perene la regiunile polare (Morino, 1978).
+ Wildish a propus o clasificare a tipurilor de cicluri de viață a amfipodelor gamaridiene ce
+conține șase categorii: multivoltin (mai mult de o generație pe an) semianual, univoltin (o
+generație pe an) sau multivoltin anual, bianual cu o singură reproducere, peren cu o singură
+sau mai multe reproduceri (Wildish, 1982).
+ Comportamentul de reproducere tipic al amfipodelor gamaridiene epibentice include
+purtarea femeli de către mascul timp de câteva zile înainte de năpârlirea femelei. Această
+purtare, sau precopulare, garantează accesul gameților masculului la gameții femelei în
+timpul scurtei perioade de după năpârlirea femelei, când poate fi produsă o pontă viabilă.
+Această perioadă este scurtă deoarece ovulația trebuie să aibă loc în timp ce exoscheletul 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+26
+femelei este încă destul de flexibil pentru a permite trecerea ouălor prin oviducte. Având în
+vedere că nu are loc o depozitare de spermă, copulația trebuie să fie imediat precedentă
+ovulației. După aceea masculii și femelele se separă (Borowsky, 1984).
+ Primele două perechi de pereiopode ale amfipodelor din subordinul Gammaridea sunt
+structuri modificate, asemănătoare unor gheare, numite gnatopode. Perechea a doua de
+gnatopode, atât la femele cât și la mascul, este, în general, mai mare decât prima pereche.
+Rolul acestor apendici este în apucarea hranei. La mascul, acestea au și un rol secundar, în
+agățarea de toracomerele femelei în precopulație. A doua pereche de gnatopode a masculilor
+este mai mare și mai elaborată decât a femelelor conspecifice, deși diferite specii utilizează
+prima pereche pentru prinderea femelelor. Prinderea are loc prin agățarea unui gnatopod la
+partea dorsală a primului segment coxal și celălalt, rotit cu 180°, la cea de-a cincea placă
+coxală. Atașarea are loc prin inserarea dactilului sub placă, unde se suprapun două segmente
+adiacente (Borowsky, 1984).
+ În cazul în care s-au pus în același recipient o pereche în precopulație și un mascul mai
+mare decât cel al perechii, masculul mai mare l-a înlocuit pe cel mai mic. Acest fenomen a
+avut loc prin atașarea masculului mai mare de femelă prin intermediul gnatopodelor mai
+mici, urmând apoi dezatașarea gnatopodelor masculului mai mic de către cel mai mare prin
+intermediul gnatopodelor mari al celui din urmă. În același timp masculul mai mic este
+îndepărtat de femelă de către masculul mai mare prin intermediul uropodelor acestuia
+(Borowsky, 1984).
+1.6.1. Descrierea speciei Gammarus balcanicus ssp. dacicus
+ Genul Gammarus aparține familiei Gammaridae și conține în emisfera nordică mai mult
+de 100 de specii de amfipode de apă dulce, salmastră și marină (Gerhardt et al., 2011).
+Acestea sunt aproape universal caracteristice apelor de suprafață din Eurasia nordică și
+America (Sutcliffe, 1992). Acestea sunt specii cheie în ecosistemele acvatice și adesea sunt
+prezente în mare abundență (Gerhardt et al., 2011). În ecosistemele dulcicole, distribuția
+speciilor de amfipode din genul Gammarus este influențată de factori abiotici, cum ar fi
+temperatura, salinitatea, oxigenarea, aciditatea și poluarea. Speciile acestui gen se găsesc
+adeseori într-o abundență mare în sau sub orice substrat, care asigură atât refugiu împotriva 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+27
+prădătorilor, cât și un supliment de detritus organic și alte substanțe nutritive, cum ar fi sub
+pietre, pietriș, sau printre vegetație vie sau moartă. Acestea se pot găsi și la suprafața apelor
+și la 2 m adâncime în zona hiporeică, imediat după inundații puternice (Macneil et al., 1997;
+Henry, Danielopol, 1999).
+ Răspândirea speciei Gammarus balcanicus acoperă mare parte a Peninsulei Balcanice. În
+vest se găsește de-a lungul Munților Dinarici, Alpii nordici și sud-estici. În est se găsește în
+întreaga provincie Carpatică, cu populații izolate în estul îndepărtat, până la Peninsula
+Krimea (Grabowski, Mamos, 2010).
+ Speciile de Gammarus sunt importante macronevertebrate bentonice, prada multor pești
+și a altor prădători. Diferite specii pot detecta prădătorii prin substanțe chimice eliberate de
+pești și animale conspecifice rănite. Răspunsurile la aceste substanțe a speciilor Gammarus
+includ activitate scăzută și alte modificări comportamentale, schimbări în păzirea
+precopulativă a partenerului și creștere și supraviețuire scăzute (De Lange et al., 2005).
+ Activitatea speciilor de Gammarus este influențată de lumină, organismele fiind mai
+active noaptea. Acest comportament s-ar putea să fi evoluat ca un răspuns anti-prădare din
+moment ce sub condiții de lumină slabă, prada este mai puțin vulnerabilă față de prădătorii
+vizuali (De Lange et al., 2005).
+ Majoritatea membrilor acestei familii sunt considerate ca detritivore, cu doar câteva
+cazuri omnivorie (Platvoet et al., 2006).
+ La majoritatea speciilor comune de Gammarus sezoanele de împerechere durează 6 – 10
+luni din an. Câteva specii prezintă câteva populații care se reproduc pe toată perioada anului.
+Cu toate acestea, proporția femelelor ovigere dintr-o populație prezente lunar variază
+considerabil pe parcursul unui an. În mod normal apar una sau două perioade de vârf de
+împerechere care pot varia ca perioadă, dar cel mai des au loc iarna târziu și primăvara
+(Sutcliffe, 1993).
+ Majoritatea speciilor de Gammarus au 52 de cromozomi. Determinarea sexului nu se face
+pe baza gonozomilor X și Y, deși aceștia sunt prezenți, ci, la trei specii, G. duebeni, G.
+yaddachi şi G. pulex, pe baza unui sistem polifactorial echilibrat de gene sexuale alele aflate 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+28
+în loci de pe mai multe perechi de cromozomi. Progeniturile unor perechi sunt fie toți femele
+fie toți masculi (Sutcliffe, 1992).
+Fig. 7 G. b. dacicus (foto Denis Copilaș-Ciocianu)
+ Lungimea corpului la masculi și femele este de 9-14 mm, masculii fiind, în general, mai
+robuști. Ochii sunt mijlocii ca mărime și sunt ușor reniformi (Cărăuşu et al., 1955).
+ La mascul, antena I are flagelul format din 30-33 de articole, iar antena II din 11-14.
+Organele cupuliforme se găsesc între al 2-lea și al 10-lea articol. La femele, flagelul antenei I
+este alcătuit din 24 de articole, iar al antenei II din 9. Flagelul accesoriu la ambele sexe este
+format din 2+1 până la 4+1 articole. Antena II este puțin păroasă (Cărăuşu et al., 1955).
+ Plăcile coxale I-IV prezintă pe marginea anterioară 2-3 crestături. Pereiopodele I și II, la
+femele, au pe marginea basipoditelor numeroși peri lungi. La masculi, aceștia sunt în număr
+mai redus. Meropoditele pereiopodelor au grupe de peri, mai numeroase la femele decât la 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+29
+masculi. Pereiopodul V cu basipoditul, este de o dată și jumătate mai lung decât lat.
+Marginea anterioară are 3-5 spini, iar cea posterioară 8-14 peri. În unghiul dinspre
+ischiopodit există 1-2 per neegali. Pe marginea posterioară a segmentelor metasomului I-III
+se află 2-4 peri, frecvent 3-4. Plăcile epimerale II și III au unghiul posterior ascuțit. Marginea
+inferioară a plăcii a II-a este prevăzută cu 1-2 spini, iar a III-a cu 4 (Cărăuşu et al., 1955).
+ Segmentele urosomului prezintă dorsal spini puternici, dispuși astfel: I 3 -- 2-4 - 3; II 3 --
+2-4 - 2-3; III 1-3 – 0 - 2-3. Spinii mediani sunt apropiați. Uropodul III are ramura internă cel
+puțin trei pătrimi din cea externă. Pe ambele margini este prevăzută cu peri penați, rari.
+Ramura externă, ca pilozitate, se aseamănă cu cea de Gammarus balcanicus Schäf (Cărăuşu
+et al., 1955).
+ Telsonul are lobii alungiți, mai ales la masculi. La femele lobii sunt mai scurți. Apical,
+fiecare poartă câte 2 spini și peri scurți. Lateral, pe lobi există spini, mai frecvent în treimea
+inferioară (Cărăuşu et al., 1955).
+Gammarus balcanicus ssp. dacicus este o formă de apă liniștită, ce se găsește prin
+băltoacele izvoarelor sau chiar în izvoare. Această formă, destul de răspândită în țara noastră
+în multe regiuni, pare a înlocui forma tipică de Gammarus balcanicus Schäf (Cărăuşu et al.,
+1955).
+1.6.2. Descrierea speciei Niphargus valachicus
+ Genul Niphargus aparține familiei Niphargidae și este cel mai mare ca număr de specii,
+având cam de două ori mai multe specii decât al doilea cel mai mare gen ca număr de specii,
+Gammarus. Dintre aceste specii de Niphargus majoritatea trăiesc în diferite ape subterane,
+fiind o componentă importantă a faunei subterane, o parte minoră trăind în apele de suprafață
+(Akbulut et al., 2001; Fišer et al., 2007).
+ Întregul areal de distribuție al acestei specii corespunde extensiei Parathetys-ului în
+tranziția Miocen/Pliocen. Distribuția largă a acestei specii face probabil faptul că N.
+valachicus a invadat ape dulci din rămășițele Mării Tethyene, decât să se fi răspândit dintr-un
+singur punct (Akbulut et al., 2001). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+30
+ Aceasta este o specie epigee ce trăiește în izvoarele limnocrene, ochiuri de apă, bălți în
+apropiere de mal, printre rădăcinile sălciilor, pe sub frunzele căzute, printre plantele acvatice:
+Elodea canadensis, Ceratophillum tc., în asociație cu Synurella ambulans sau cu Aselizi. În
+luna iulie s-au găsit numeroase femele cu ouă (Cărăuşu et al., 1955).
+ Niphargus valachicus are culoarea cafeniu deschis, iar la unele exemplare galben murdar.
+Pe părțile laterale ale capului există câte o pată galben-sulfurie, care dispare în alcool
+(Cărăuşu et al., 1955).
+Fig. 8 Niphargus valachicus (foto Denis Copilaș-Ciocianu)
+Are un corp îndesat cu apendice comparativ scurte și cuticulă structurată puternică și
+proeminentă. Nu prezintă ochi (Akbulut et al., 2001).
+ Lungimea corpului la femele este de 18-20 mm, la masculi adulți între 14-15 mm
+(Cărăuşu et al., 1955; Akbulut et al., 2001).
+ Antena I, cu flagelul format din 25-36 de articole, întrece uneori jumătate din lungimea
+corpului. Antena II are flagelul format din 13-15 articole (Cărăuşu et al., 1955). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+31
+ Lobul intern al maxilei I este prevăzut cu 2-4 peri, lobul extern cu 6 spini cu câte 1 dinte,
+cel intern cu 2. Palpul prezintă apical 3-5 peri neegali. Lobul intern al maxilipedului, mai
+scurt sau egal cu capătul distal intern al primului articol al palpului, poartă în vârf 3 spini.
+Lobul extern nu atinge jumătate din articolul 2 al palpului (Cărăuşu et al., 1955).
+ Plăcile coxale I-IV la ambele sexe sunt mai înalte decât late. Gnatopodele au propoditele
+mai late decât înalte, cu marginile palmare drepte. În unghiul palmar, prezintă pe lângă spinul
+puternic, 4-5 spini dințați. Marginea externă a dactilopoditelor prezintă câte un șir de peri
+simpli. Pereiopodele sunt robuste, iar dactilopoditele prezintă mulți spini: I cu 6-11, II cu 5-9,
+III cu 4-8, IV cu 6-9, V cu 7-10. Lamele incubatoare sunt lățite (Cărăuşu et al., 1955).
+ Plăcile epimerale II și III au unghiul inferoposterior prelungit într-un dinte curbat. Placa
+epimerală I, cu marginea inferioară aproape dreaptă, este lipsită de peri sau spini, a II-a cu
+marginea inferioară convexă, prezintă 1 spin, iar a III-a, 2. Pleopodele au retinaculul cu 2
+cârlige și 1 păr (Cărăuşu et al., 1955).
+ Segmentele urosomale I și II sunt prevăzute dorsolateral cu câte un spin scurt și gros. Pe
+segmentul I, spinii sunt în general încovoiați și așezați pe niște mici ridicături. Uropodul I are
+endopoditul mai lung decât exopoditul. Masculul prezintă pe protopodit, apical, un apendice
+în formă de lingură. Al II-lea are ramurile subegale, iar uropodul III este nediferențiat la cele
+două sexe, ceea ce îl îndepărtează de formele de Niphargus puteanus Koch și N. tatrensis
+Wrześ. Articolul bazal este cel puțin egal cu telsonul (Cărăuşu et al., 1955).
+ Telsonul, cu lungimea și lățimea egale, despicat aproape două treimi din lungime, poartă
+în vârful lobilor câte 3-4 spini puternici. Lateral, ca și pe părțile interne, prezintă câte 1 spin,
+iar pe lobi, la unele exemplare, 1-2 spini (Cărăuşu et al., 1955).
+1.6.3. Descrierea speciei Synurella ambulans
+ Genul Synurella aparține familiei Crangonyctidae și cuprinde 18 specii dintre care 3 se
+găsesc în sudestul Statelor Unite ale Americii, 2 specii sunt cunoscute din nordestul Siberiei
+și o specie din Alaska. Restul de 12 specii se găsesc în Europa și Asia Mică (Konopacka et
+al., 2000). Acest amfipod se găsește în habitate dulcicole atât din câmpii cât și în râuri 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+32
+montane, lacuri mici, mlaștini, bălți temporare și pârâuri. Mai mult, s-au găsit și populații de
+Synurella subterane, unele fiind adevărate stigobionte (Boets, Lock, Goethals, 2010).
+Synurella ambulans este o specie de amfipod care se întâlnește în regiunea Ponto-Caspică
+și Europa centrală și estică. Habitatele colonizate de Synurella ambulans prezintă caractere
+comune cum ar fi viteză de curgere mică, temperatură stabilă a apei și prezența materiilor
+vegetale moarte. Această specie poate fi găsită și în ape de suprafață care seacă periodic
+(Boets, Lock, Goethals, 2010).
+ Synurella ambulans este o specie frecventă în bălți, ochiuri de apă, șanțuri alimentate de
+ape de izvoare, de ape curgătoare, sau de apa provenită din precipitații (Cărăuşu et al., 1955),
+mlaștini, izvoare, fântâni, maluri mlăștinoase ale râurilor și maluri noroioase ale lacurilor.
+Toate aceste habitate au în comun nivelul scăzut de oxigen al apei (Konopacka et al., 2000).
+În regiunea Muntenegru a fost descoperită la altitudinea de 1600 m. Se întâlnește în orice
+anotimp printre plantele acvatice: Elodea, Ceratophilum, Lemna etc. În unele regiuni din
+România a fost găsită în asociație cu Niphargus valachicus. În general preferă apele liniștite,
+ce aparțin tipului oligotrof (Cărăuşu et al., 1955).
+Atât în Ungaria cât și în România, specia a fost colectată și din puțuri, în asociație cu
+Planarii și Asellus (Cărăuşu et al., 1955).
+Fig. 9 Synurella ambulans (foto Denis Copilaș-Ciocianu) 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+33
+ Lungimea corpului este de 5,5 mm la femele și de 4,5 mm la masculi (Cărăuşu et al.,
+1955; Sidorov, Palatov, 2012).
+ La Synurella ambulans ochii sunt vestigiali, au un contur neregulat, aproape reniform,
+acesta prezentând o pată galbenă pe apexul capului (Boets, Lock, Goethals, 2010; Sidorov,
+Palatov, 2012). Exemplarele din puțuri au un număr redus de omatidii. Antena I este puțin
+mai lungă decât jumătate din corp. Aceasta prezintă flagelul format din 16 articole la femelă
+și din 13 articole la mascul. Flagelul accesoriu este format din 2 articole. Antena II are
+flagelul format din 6-7 articole la femelă și din 5 articole la mascul. La mascul, există pe
+primele 2 articole ale pedunculului și pe primele 3 articole ale flagelului formațiuni senzitive
+numite organele lui la Valette (Cărăuşu et al., 1955).
+ Antena I este 55% din lungimea corpului, cu 30% mai lung decât antena II. Flagelul
+primar prezintă 13 segmente. Flagelul antenei II prezintă 5 segmente și calceole (Sidorov,
+Palatov, 2012).
+ Mandibula prezintă între lacinia mobilă și fațeta molară, 2-3 spini dințați înspre vârf.
+Maxila I are lobul intern lățit și prevăzut u 4-7 peri ciliați, iar cel extern cu 7 spini puternici,
+așezați în două planuri, dintre aceștia, unii fiind prevăzuți cu un dinte, alții fiind pluridințați.
+Palpul biarticulat este vizibil mai lung decât lobul extern și are în vârf un număr variabil de
+peri. Maxila II prezintă lobii lățiți, cel intern fiind prevăzut pe marginea internă cu o serie de
+peri penați. Buza inferioară este lipsită de lobi interni. Maxilipedul are lobul intern mai scurt
+decât primul articol al palpului, iar cel extern puțin mai lung (Cărăuşu et al., 1955).
+ Gnatopodele I și II, asemănătoare, sunt de tip gamaridian. La femele, prima pereche are
+propoditul puțin mai lung decât lat, iar a doua vizibil mai lung decât lat. Carpopoditele la
+ambele perechi sunt aproape tot atât de lungi ca și propoditele. La masculi, gnatopodele, mai
+ales perechea a II-a, sunt mai dezvoltate și mai înarmate pe marginea palmară. Carpopoditele
+sunt vizibil mai scurte decât propoditele (Cărăuşu et al., 1955).
+ Pereiopodele I și II au ghearele o treime din dactilopodite, pereiopodele III-V au
+basipoditele lățite, iar ghearele aproape o cincime din dactilopodite. Lamele incubatoare sunt
+dezvoltate, mai lungi decât late, a IV-a fiind aproape pătrată (Cărăuşu et al., 1955). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+34
+ Plăcile epimerale I-III au unghiul inferoposterior ușor ascuțit. Marginile inferioare ale
+plăcilor II și III prezintă câte 2-3 peri spiniformi. Retinaculul este format din 2 cârlige
+(Cărăuşu et al., 1955).
+ Urosomul are segmentele fuzionate și este lipsit dorsolateral de peri și spini. Uropodele I
+și II au ramurile aproape egale și prevăzute cu spini puternici. Uropodul III este uniramat, cu
+ramura scurtă și conică (Cărăuşu et al., 1955).
+ Telsonul este puțin despicat, cu marginile aproape paralele. Acesta prezintă în vârful
+lobilor câte 5-6 spini, iar lateral 1-2 peri senzitivi, ciliați (Cărăuşu et al., 1955).
+ Exemplarele provenite din bălți au culoarea corpului cenușiu închis, cenușiu verzui, pe
+cap cu o pată caracteristică de culoare galben-sulfuriu, care se decolorează în alcool. Formele
+de puțuri au culoarea cenușiu deschis, cu pata sulfurie de pe cap vizibilă (Cărăuşu et al.,
+1955). 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+35
+Capitolul 2:
+Materiale și metode
+2.1. Caracterizarea zonelor de studiu
+Zonele de studiu se află în județul Timiș din regiunea istorică Banat. Acest județ se află
+în extremitatea vestică a țării și se întinde pe o suprafață de 8.697 km2, reprezentând 3,6 %
+din teritoriul României și primul loc între județele țării. Reședința județului Timiș se află în
+municipiul Timișoara.
+ Relieful acestui județ este variat, predominând câmpia joasă în partea vestică și câmpia
+înaltă în partea centrală. Pe văile Timișului, spre Lugoj, și Begăi, spre Făget, câmpia
+pătrunde în zona dealurilor sub forma unor golfuri. Masivul Poiana Ruscă, cu vârful Padeșul
+ce atinge 1380 m, este mărginit de dealurile premontane ale Pogănișului și de Podișul
+Lipovei.
+ Clima județului Timiș este continental de tranziție, cu ușoare influențe submediteraneene,
+fiindu-i caracteristice diversitatea și neregularitatea proceselor atmosferice. Lanțul Munților
+Carpați din partea de răsărit, protejează județul împotriva aerului rece continental, iar
+deschiderea spre vest permite penetrarea mai ușoară a aerului temperat maritim. Temperatura
+medie anuală oscilează între -2ºC și 21ºC. Cea mai joasă temperatură înregistrată în
+Timișoara a fost de -35,5ºC, iar cea mai ridicată temperatură a fost de 42ºC vara la Teremia
+Mare. Rata anuală a precipitațiilor este situată între 500 și 600 mm, mai ridicată în zonele de
+deal și munte.
+ Teritoriul acestui județ este străbătut de la est la sud-vest de râurile Bega și Timiș, cu
+afluenții săi Timișana, Pogăniș și Bârzava, iar în nord își urmează cursul de la est spre vest,
+Aranca, un vechi braț al Mureșului.
+ Râurile din care s-au prelevat probele sunt râul Bega din Timișoara și râul Ier, numit și
+Apa Mare, din Rezervația ornitologică Mlaștinile de la Satchinez. 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+36
+Fig. 10 Râurile din care s-au prelevat probele (Google Earth)
+ Timișoara este situată în sudul Câmpiei de Vest, în zona de divagare a râurilor Timiș și
+Bega, acestea formând aici o zonă foarte mlăștinoasă și frecvent inundată. În timp rețeaua
+hidrografică a zonei a fost desecată, îndiguită și deviată, astfel încât Timișul nu mai străbate
+orașul. Construirea Canalului Bega și desecarea completă a mlaștinilor din împrejurimi a dus
+la îmbunătățirea terenului.
+ Sistemul râului Bega este ultimul afluent din stânga al Tisei și este constituit pe teritoriul
+țării noastre din două cursuri colectoare, Bega și Bega Veche, acestea confluând după ieșirea
+din țară. Acestea drenează împreună o suprafață de 4.262 km2 (Ujvári, 1972).
+ Râul Bega are o suprafață de 2.241 km2 și o lungime de 168,6 km. Acesta izvorăște de
+sub vârful Padeș, la altitudinea de 1.150 m, din Munții Poiana Ruscă. În această regiune
+domină rocile cristaline și zonele de pădure, iar imediat după formarea albiei, râul traversează
+masivele calcaroase paleozoice de la Luncani, formând chiar o mică depresiune de eroziuni și
+chei. Panta medie longitudinală în sectorul montan este de 15m / km. La poalele nordice ale
+munților Poiana Ruscă, Bega primește primul său afluent din dreapta, Sașa. De aici râul se
+îndreaptă spre vest către Câmpia Begăi și Dealurile piemontane ale Lipovei. Înainte de
+ieșirea din țară mai primește afluenți ca Homoșdia, Năndrasca, pârâul Coșteiului, Bunea, 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+37
+Topla, Cladova, ultimul său afluent din dreapta fiind Behela. Afluenții din stânga sunt:
+Carpenilor, Șopot, Vădana, Zopana, Balașina, cel mai mare fiind Gladna (Ujvári, 1972).
+ Rezervația ornitologică Mlaștinile de la Satchinez se află în județul Timiș, la aproximativ
+25 km nord-vest de Timișoara, în imediata apropierea a localității Satchinez. Geomorfologic,
+se află la contactul a trei câmpii: Câmpia Vingăi, Câmpia Jimboliei și Câmpia Timișului,
+acestea având caractere morfologice diferite. Rezervația propriu-zisă ocupă lunca Ierului, râu
+numit și Apa mare, între localitățile Satchinez și Bărăteaz (Stănescu, 2005). Valea Ierului se
+întinde pe o lungime de cca. 30 km, între localitățile Vinga și Biled, de o parte și alta a
+pârâului Ier. Lățimea albiei majore variază între 200-1200 m (Kiss, 2002).
+2.2. Caracterizarea stațiilor de prelevare
+Pe râul Bega s-au prelevat probe de la o singură stație, de la mal. Această stație se
+caracterizează printr-un curs mai domol și substrat mâlos. Vegetația acestei zone este
+reprezentată de tufăriș, dominând Phragmites communis. Sunt prezente și specii de Lemna.
+Coordonatele acestei stații sunt 45° 45' 18.99" N și 21° 16' 35.79" E, aflându-se la
+altitudinea de 89 m.
+Fig. 11 Stația de prelevare a probelor de pe râul Bega (Google Earth) 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+38
+ Pe râul Ier s-au prelevat probe tot de la o singură stație, unde substratul este pietros,
+nisipos, cu un curs mai rapid. Vegetația lemnoasă a acestei zone este reprezentată de specii
+ca Prunus spinosa, Rhamnus cathartica, Crataegus monogyna, Rosa canina etc. iar sub
+acestea sunt prezente specii ierboase ca Glechoma hederacea, Viola odorata, specifice
+pădurilor. Ochiurile de apă sunt înconjurate de stufărișuri dominate de Phragmites
+communis. Plantele acvatice sunt reprezentate de Typha latifolia, Lemna minor, Lemna
+trisulca, Hydrocharis morsus-ranae, Glyceria aquatica, Poa trivialis, Symphytum officinale,
+Carex riparia, Schoenoplectus tabaernaermontani, Polygonum amphibium (Stănescu, 2005;
+Kiss. 2002). Coordonatele acestei stații sunt 45º 57,568’ N și 21º 03,037’ E, aflându-se la o
+altitudine de 111 m.
+Fig. 12 Stația de prelevare a probelor de pe râul Ier (foto original)
+ În ambele s-au găsit toate cele trei specii de amfipode coexistând, dar în proporții diferite. 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+39
+2.3. Colectarea speciilor
+S-a efectuat o colectare a speciilor din cele două stații, pe parcursul a 12 luni succesive,
+pentru a evidenția ciclul de viață al celor trei specii de amfipode. Colectarea s-a efectuat
+deoarece acest studiu necesită analiza amănunțite asupra fiecărui individ care nu se pot face
+pe teren, și, nefiind specii protejate, capturarea și colectarea lor pentru transportul în
+laborator este permisă.
+Fig. 13 Colectare semi-cantitativă (foto Marius-Gavril Berchi)
+ Capturarea amfipodelor s-a realizat cu ajutorul unui fileu bentonic cu ochiuri de 350 µm
+în diferite zone ale stației pentru a colecta un număr corespunzător de indivizi. Colectarea
+amfipodelor s-a realizat printr-o metodă semi-cantitativă. Spălarea probelor s-a realizat
+printr-o agitare puternică, urmând plasarea acesteia într-o tavă albă, pentru analiză. S-au
+colectat doar indivizi de amfipode din cele trei specii, de diferite dimensiuni, din întreaga
+probă. Indivizii s-au conservat în recipiente de plastic închise ermetic, în alcool de 70 %. 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+40
+Fiecare recipientu este notat cu un cod unic care cuprinde date privind stația de recoltare și
+data.
+2.4. Analiza speciilor
+Analiza indivizilor de amfipode a constat în identificarea speciei, identificarea sexului,
+măsurarea lungimii corpului, numărarea indivizilor, numărarea și măsurarea lungimii și
+lățimii ouălor femelelor ovigere.
+ Cele trei specii de amfipode pot fi determinate pe teren, dar este mai ușor și mai de
+precizie ca identificarea să se realizeze în laborator, la un stereomicroscop. Am utilizat
+stereomicroscopul Optika pentru a analiza amfipodele. Determinarea speciilor am făcut-o pe
+baza Cărăuşu S., Dobreanu E., Manolache C, 1955. Fauna Republicii Populare Române,
+Crustacea, Amphipoda, Forme salmastre şi de apă dulce. Editura Academiei Republicii
+Populare Române, 4 (4).
+Fig. 14 Analiza speciilor (foto Lauriana-Eunice Zbîrcea)
+ Măsurarea indivizilor s-a realizat prin intermediul unui ocular gradat ce prezintă o grilă
+de la 1 la 10, a unui șubler și a unui ac entomologic. Diametrul acului entomologic a fost 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+41
+măsurat cu șublerul electronic de mai multe ori, în mai multe puncte. S-a selectat o mărire la
+care 3 unități ale grilei reprezintă 0,44 mm.
+
+Fig. 15 Șubler electronic și grila ocularului gradat (foto original)
+ Separarea sexelor s-a realizat pe baza prezenței la femele a oostegitelor și la masculi a
+papilei genitale, dar și pe baza altor caractere morfologice, specifice.
+ La Gammarus balcanicus ssp. dacicus sexele s-au separat pe baza unor diferențe
+morfologice cum ar fi prezența unui spin median pe gnatopodul masculilor. Diferențierea
+între adulți și juvenili s-a realizat prin măsurarea dimensiunii corpului, juvenilii având sub 4-
+5 mm.
+Fig. 16 Gnatopod cu spin median la masculul de G. b. dacicus (foto și desen original) 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+42
+
+Fig. 17 Mascul, femelă neovigeră și femelă ovigeră de G. b. dacicus (foto original)
+ La Niphargus valachicus sexele s-au separat pe baza unor diferențe morfologice cum ar fi
+prezența unui apendice median pe propoditul primei perechi de uropode. Diferențierea între
+adulți și juvenili s-a realizat prin măsurarea dimensiunii corpului, juvenilii având sub 7 mm.
+
+Fig. 18 Mascul, femelă neovideră și femelă ovigeră de N. valachicus (foto original)
+♂
+♀n ♀o
+♂
+♀n ♀o
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+43
+ La Synurella ambulans sexele s-au separat pe baza formei gnatopodelor la masculi și
+femele. La masculi gnatopodele sunt mai late, iar la femele sunt mai înguste. Diferențierea
+între adulți și juvenili s-a realizat prin măsurarea dimensiunii corpului, juvenilii având sub 2
+mm.
+
+Fig. 19 Mascul, femelă neovigeră și femelă ovigeră de S. ambulans (foto original)
+ Măsurarea lungimii corpului s-a efectuat prin intermediul unui ocular gradat ce prezintă
+diviziuni de la 0 la 100. S-a măsurat diametrul zonei mediane a unui ac entomologic, acesta
+fiind de 0,44 mm. S-a setat mărirea lupei astfel încât diametrul acului să corespundă la 3
+unități ale grilei. Astfel, pentru fiecare individ în parte, s-a măsurat lungimea corpului în
+unități ale grilei, ulterior, prin regula de trei simplă, calculându-se dimensiunea în mm.
+ Măsurarea ouălor s-a realizat într-un mod asemănător diferența fiind faptul că mărirea s-a
+reglat astfel încât diametrul acului să corespundă la 22 unități ale grilei.
+
+Fig. 20 Ouă de N. valachicus (foto original)
+♂
+♀n ♀o
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+44
+2.5. Prelucrarea și interpretarea datelor
+ Datele au fost prelucrate în programul Microsoft Excel 2010 prin calcularea unor medii și
+indici.
+ Fecunditatea parțială reprezintă numărul mediu de ouă / lungimea medie a femelelor
+ovigere dintr-o specie. Fecunditatea parțială ridicată reprezintă un număr mare de ouă la
+indivizi de dimensiuni mai mici.
+ Indexul de maturitate reprezintă lungimea cea mai mică / lungimea medie a indivizilor
+unei specii.
+ S-a determinat dacă există diferențe semnificative între lungimea femelelor reproductive
+la cele trei specii și între numărul de ouă per cele trei specii utilizând testele neparametrice
+Mann-Whitney U, Kolmogorov-Smirnov și Kruskal-Wallis la 2 grade de libertate.
+ Testul Mann-Whitney U a fost aplicat utilizând site-ul http://scistatcalc.blogspot.ro/
+2013/10/mann-whitney-u-test-calculator-work-in.html. Acest site prezintă rezultatele direct
+prin afișarea textului Reject/Accept Null Hypothesis as p value </>= 0.05. Ipoteza nulă: cele
+două grupe de date nu sunt diferite.
+ Testul Kolmogorov-Smirnov a fost aplicat utilizând site-ul http://www.physics.csbsju.edu
+/stats/KS-test.n.plot_form.html. Acest site afișează datele sub forma unei valori D care
+corespunde unei valori P. Dacă valoarea P este mai mică decât 0.05 se respinge ipoteza nulă,
+iar dacă P este mai mare sau egal cu 0,05 se acceptă ipoteza nulă. Ipoteza nulă: nu există
+diferențe între seturile de date.
+ Testul Kruskal-Wallis a fost aplicat utilizând site-ul http://scistatcalc.blogspot.ro/2013
+/11/kruskal-wallis-test-calculator-in.html#. Acest site prezintă rezultatele direct prin afișarea
+textului Reject/Accept Null Hypothesis for 5 % level. Ipoteza nulă: toate grupele de date au
+varianțe medii similare.
+ S-a determinat corelația dintre lungimea femelelor ovigere și numărul lor de ouă. 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+45
+Capitolul 3:
+Rezultate și discuții
+3.1. Numărul de indivizi capturați
+ S-au capturat și analizat un număr de 4854 indivizi, în diferite stadii de dezvoltare,
+aparținând celor trei specii: Gammarus balcanicus ssp. dacicus (notat Gbd), Niphargus
+valachicus (notat Nv) și Synurella ambulans (notat Sa).
+Fig. 21 Numărul de amfipode colectate / specie
+ Acest grafic ne arată faptul că majoritatea indivizilor colectați aparțin speciei G. b.
+dacicus, indivizii fiind în număr de 2714, iar specia cu cel mai mic număr de indivizi
+colectați, 699, este N. valachicus.
+Fig. 22 Numărul de indivizi de G. b. dacicus / an / stație
+0
+1000
+2000
+3000
+G b d N v S a
+2714
+699
+1441
+Numărul de amfipode / specie
+1017
+727 776
+170
+2
+4
+15
+3
+0
+200
+400
+600
+800
+1000
+1200
+Nr juv. Nr.  ♂ Nr. ♀ nonov. Nr. ♀ ov.
+Numărul de indivizi de G. balcanicus dacicus / an / stație
+Nr. Ind.l/an/B
+Nr. Ind./an/S
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+46
+ Din acest grafic putem deduce faptul că această specie se află într-un număr mai mare în
+râul Ier decât în râul Bega.
+Fig. 23 Numărul de indivizi de G. b. dacicus /sex și stadiu de dezvoltare
+ Acest grafic evidențiază faptul că din totalul indivizilor capturați din această specie,
+predomină juvenilii, iar numărul cel mai mic îl reprezintă femelele ovigere.
+Fig. 24 Numărul de indivizi de G. b. dacicus / an
+1019
+731 791
+173
+0
+200
+400
+600
+800
+1000
+1200
+Nr juv. Nr.  ♂ Nr. ♀ nonov. Nr. ♀ ov.
+Numărul de indivizi de G. balcanicus dacicus / sex și
+stadiul de dezvoltare
+516
+297
+214 235
+451
+561
+1507
+743
+1254
+343
+538 464
+0
+200
+400
+600
+800
+1000
+1200
+1400
+1600
+Ian. Feb. Martie Aprilie Mai Iunie Iulie August Sept. Oct. Noi. Dec.
+Număr total de indivizi de G. balcanicus dacicus / an
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+47
+ Această figură evidențiază faptul că numărul cel mai mare de indivizi de G. b. dacicus sau colectat în luna iulie, urmată de luna septembrie. Numărul cel mai mic de amfipode
+colectate se găsește în luna martie.
+Fig. 25 Numărul de indivizi de G. b. dacicus / sex și stadiu de dezvoltare / an
+ Putem observa din această figură faptul că numărul cel mai mare de juvenili se găsește în
+luna iulie, iar numărul de femele nonovigere în luna septembrie.
+0
+50
+100
+150
+200
+250
+300
+350
+400
+450
+500
+Numărul de indivizi de G. balcanicus dacicus per sex și
+stadiu de dezvoltare per an
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+48
+Fig. 26 Proporția indivizilor de sexe și stări de dezvoltare diferite de G. b. dacicus / an
+ Din această figură putem deduce faptul că această specie se reproduce pe toată perioada
+anului, dar mai ales la sfârșitul primăverii. 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+49
+Fig. 27 Numărul de indivizi de N. valachicus / an / stație
+ Putem observa din acest grafic faptul că această specie se află într-un număr mai mare în
+râul Bega decât în râul Ier.
+Fig. 28 Numărul de indivizi de N. valachicus / sex și stadiu de dezvoltare
+ Putem deduce din acest grafic faptul că din totalul indivizilor capturați din această specie,
+predomină juvenilii, iar numărul cel mai mic îl reprezintă femelele ovigere.
+222 0
+241 218 183
+27
+0
+50
+100
+150
+200
+250
+300
+Nr juv. Nr.  ♂ Nr. ♀ nonov. Nr. ♀ ov.
+Numărul de indivizi de N. valachicus /
+an / stație
+Nr. Ind.l/an/B
+Nr. Ind./an/S
+243 220
+185
+27 0
+50
+100
+150
+200
+250
+300
+Nr juv. Nr.  ♂ Nr. ♀ nonov. Nr. ♀ ov.
+Numărul de indivizi de N. valachicus /
+sex și stadiu de dezvoltare
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+50
+Fig. 29 Numărul de indivizi de N. valachicus / an
+ Această figură evidențiază faptul că numărul cel mai mare de indivizi de N. valachicus
+s-au colectat în luna iulie, urmată de luna septembrie. Numărul cel mai mic de amfipode
+colectate se găsește în luna decembrie.
+Fig. 30 Numărul de indivizi de N. valachicus / sex și stadiu de dezvoltare / an
+ Această figură evidențiază faptul că numărul cel mai mare de juvenili se găsește în luna
+iunie, iar numărul de femele nonovigere în luna septembrie. De asemenea numărul de femele
+ovigere și nonovigere au valori asemănătoare aproape pe tot anul.
+53 40 64
+114 137
+261
+431
+212
+285
+111 120
+2
+0
+100
+200
+300
+400
+500
+Numărul total de indivizi de N. valachicus / an
+0
+10
+20
+30
+40
+50
+60
+70
+80
+90
+Numărul de indivizi de N. valachicus / sex și stadiu de dezvoltare / an
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+51
+Fig. 31 Proporția indivizilor de sexe și stări de dezvoltare diferite de N. valachicus / an
+ Acest grafic evidențiază faptul că această specie prezintă o anumită perioadă de
+reproducere pe parcursul unui an, mai exact la sfărșitul primăverii și începutul verii.
+6%
+33%
+61%
+0%
+Proporția indivizilor de
+N. valachicus pe Ianuarie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+14%
+29%57%
+0%
+Proporția indivizilor de
+N. valachicus pe
+Februarie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+9%
+46%
+45%
+0%
+Proporția indivizilor de N.
+valachicus pe Martie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+0%
+42%
+32%
+26%
+Proporția indivizilor de
+N. valachicus pe Aprilie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+51%
+20%
+18%
+11%
+Proporția indivizilor de
+N. valachicus pe Mai
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+71%
+14%
+9%6%
+Proporția indivizilor de N.
+valachicus pe Iunie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+48%
+27%
+22%
+3%
+Proporția indivizilor de
+N. valachicus pe Iulie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+38%
+35%
+27%
+0%
+Proporția indivizilor de
+N. valachicus pe August
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+23%
+44%
+33%
+0%
+Proporția indivizilor de N.
+valachicus pe Septembrie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+0%
+57% 43%
+Proporția indivizilor de
+N. valachicus pe
+Octombrie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+0%
+48% 52%
+Proporția indivizilor de
+N. valachicus pe
+Noiembrie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov. 1
+0
+Proporția indivizilor de N.
+valachicus pe Decembrie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+52
+Fig. 32 Numărul de indivizi de S. ambulans / an / stație
+ Acest grafic pune în vedere faptul că această specie se găsește în ambele râuri în număr
+mare, dar se află într-un număr mai mare în râul Bega decât în râul Ier.
+Fig. 33 Numărul de indivizi de S. ambulans / sex și stadiu de dezvoltare
+ Putem deduce din acest grafic faptul că din totalul indivizilor capturați din această specie,
+predomină femelele nonovigere, iar numărul cel mai mic îl reprezintă femelele ovigere.
+72
+158 125
+2
+307
+301
+408
+68
+0
+100
+200
+300
+400
+500
+600
+Nr juv. Nr.  ♂ Nr. ♀ nonov. Nr. ♀ ov.
+Numărul de indivizi de S. ambulans / an / stație
+Nr. Ind.l/an/B
+Nr. Ind./an/S
+379
+459
+533
+70
+0
+100
+200
+300
+400
+500
+600
+Nr juv. Nr.  ♂ Nr. ♀ nonov. Nr. ♀ ov.
+Numărul de indivizi de S. ambulans / sex și stadiu de dezvoltare
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+53
+Fig. 34 Numărul de indivizi de S. ambulans / an
+ Putem deduce din această figură faptul că numărul cel mai mare de indivizi de S.
+ambulans s-au colectat în luna noiembrie, urmată de luna ianuarie. Numărul cel mai mic de
+amfipode colectate se găsește în luna august.
+Fig. 35 Numărul de indivizi de S. ambulans / sex și stadiu de dezvoltare / an
+ Această figură evidențiază faptul că numărul cel mai mare de juvenili se găsește în luna
+iulie, iar numărul de masculi în luna noiembrie.
+437
+306
+266
+216 244
+314
+374
+116
+322 336
+629
+384
+0
+100
+200
+300
+400
+500
+600
+700
+Numărul total de indivizi de S. ambulans / an
+0
+20
+40
+60
+80
+100
+120
+140
+160
+180
+200
+Numărul de indivizi de S. ambulans / sex și stadiu de dezvoltare / an
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+54
+Fig. 36 Proporția indivizilor de sexe și stări de dezvoltare diferite de N. valachicus / an
+ Acest grafic evidențiază faptul că această specie prezintă o anumită perioadă de
+reproducere pe parcursul unui an, mai exact la sfărșitul primăverii și începutul verii.
+9%
+55% 36%
+0%
+Proporția indivizilor de S.
+ambulans pe Ianuarie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+0%
+43% 52%
+5%
+Proporția indivizilor de S.
+ambulans pe Februarie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+1%
+38%
+31%
+30%
+Proporția indivizilor de S.
+ambulans pe Martie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+0%
+48%
+42%
+10%
+Proporția indivizilor de S.
+ambulans pe Aprilie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+26%
+23% 22%
+29%
+Proporția indivizilor de S.
+ambulans pe Mai
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov. 86%
+3%8%3%
+Proporția indivizilor de S.
+ambulans pe Iunie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+96%
+1%3%0%
+Proporția indivizilor de S.
+ambulans pe Iulie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+24%
+36%
+40%
+0%
+Proporția indivizilor de S.
+ambulans pe August
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+10%
+55% 35%
+0%
+Proporția indivizilor de S.
+ambulans pe Septembrie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+0%
+30%
+70%
+Proporția indivizilor de S.
+ambulans pe Octombrie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+9%
+54%
+37%
+0%
+Proporția indivizilor de S.
+ambulans pe Noiembrie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+0%
+40%
+59%
+1%
+Proporția indivizilor de S.
+ambulans pe Decembrie
+Nr juv.
+Nr.  ♂
+Nr. ♀ nonov.
+Nr. ♀ ov.
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+55
+3.2. Dimensiunea indivizilor capturați
+ Lungimile din următoarele grafice au ca unitate de măsură mm-ul.
+Fig. 37 Lungimea medie a adulților de G. b. dacicus / an
+ Această diagramă evidențiază faptul că indivizii acestei specii se reproduc tot anul,
+existând pe toată perioada anului indivizi de dimensiuni mai mari. De asemenea putem
+observa că există luni în care dimensiunea este mai mică, așa cum este luna septembrie. De
+asemenea putem observa faptul că masculii sunt mai mari decât femelele. Scăderea
+dimensiunii indivizilor după perioada de reproducere evidențiază faptul că nu toți indivizii
+mor după perioada de reproducere. Rămân subadulții și juvenilii. Putem trage concluzia că
+această specie are ciclul de viață de doi ani.
+Fig. 38 Lungimea medie a adulților de N. valachicus / an
+0,000
+5,000
+10,000
+15,000
+20,000
+Lungimea medie la G. b. dacicus / an
+♂
+♀ n
+♀ o
+0,000
+2,000
+4,000
+6,000
+8,000
+10,000
+12,000
+14,000
+16,000
+Lungimea medie la N. valachicus / an
+♂
+♀ nonov.
+♀ ov.
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+56
+ Această diagramă evidențiază faptul că indivizii acestei specii se reproduc în perioada
+aprilie – august. La această specie femelele sunt mai mari decât masculii. Deoarece
+dimensiunea indivizilor scade puțin după perioada de reproducere dar adulții mor presupun
+că rămân în viață subadulți și juvenili, ceea ce înseamnă că ciclul de viață al acestei specii
+este de 2 ani.
+Fig. 39 Lungimea medie a adulților de S. ambulans / an
+ Putem deduce din aceast grafic faptul că indivizii acestei specii se reproduc în perioada
+februarie – iunie. La această specie femelele sunt mai mari decât masculii. Indivizii au
+dimensiuni mari până la sfârșitul perioadei de reproducere după care scade, rămânând în
+viață doar juvenilii. Astfel este pus în evidență ciclul de viață al acestei specii care este de un
+an.
+0,000
+1,000
+2,000
+3,000
+4,000
+5,000
+6,000
+7,000
+8,000
+Lungimea medie la S. ambulans / an
+♂
+♀ nonov.
+♀ ov.
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+57
+Fig. 40 Lungimea medie a amfipodelor / an
+ Acest grafic pune în evidență faptul că indivizii de G. b. dacicus și N. valachicus au
+lungimea medie cea mai mare, S. ambulans cea mai mică. De asemenea, indivizii celor trei
+specii, au lungimea cea mai mare în prima jumătate a anului, după scade în luna iulie.
+Fig. 41 Lungimea medie a amfipodelor / specie
+ Acest grafic pune în evidență faptul că S. ambulans prezintă indivizi de dimensiunea cea
+mai mică, iar dimensiunea cea mai mare se înregistrează la G. b. dacicus.
+0,000
+2,000
+4,000
+6,000
+8,000
+10,000
+12,000
+14,000
+16,000
+Lungimea medie a indivizilor / an
+Gbd
+Nv
+Sa
+0,000
+2,000
+4,000
+6,000
+8,000
+10,000
+12,000
+G b d N v S a
+10,504 10,273
+4,916
+Lungimea medie / specie
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+58
+Fig. 42 Lungimea medie a masculilor / specie
+ Putem deduce din acest grafic faptul că S. ambulans prezintă masculi de dimensiunea cea
+mai mică, iar dimensiunea cea mai mare se înregistrează la G. b. dacicus.
+Fig. 43 Lungimea medie a femelelor neovigere / specie
+ Putem observa din acest grafic faptul că S. ambulans prezintă femele neovigere de
+dimensiunea cea mai mică, iar dimensiunea cea mai mare se înregistrează la N. valachicus.
+0,000
+2,000
+4,000
+6,000
+8,000
+10,000
+12,000
+14,000
+G b d N v S a
+12,084
+9,067
+3,985
+Lungimea medie a masculilor / specie
+0,000
+2,000
+4,000
+6,000
+8,000
+10,000
+12,000
+G b d N v S a
+8,715
+11,343
+5,477
+Lungimea medie a femelelor
+neovigere / specie
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+59
+Fig. 44 Lungimea medie a femelelor ovigere / specie
+ Putem deduce din acest grafic faptul că S. ambulans prezintă femele ovigere de
+dimensiunea cea mai mică, iar dimensiunea cea mai mare se înregistrează la N. valachicus.
+3.3. Numărul de ouă al femelelor ovigere
+Fig. 45 Numărul de ouă / specie
+ Acest grafic evidențiază faptul că, din totalul de 5609 ouă, numărul cel mai mare s-a
+observat la G. b. dacicus, iar numărul cel mai mic la N. valachicus.
+0,000
+2,000
+4,000
+6,000
+8,000
+10,000
+12,000
+14,000
+G b d N v S a
+12,034 12,760
+6,909
+Lungimea medie a femelelor ovigere
+/ specie
+0
+500
+1000
+1500
+2000
+2500
+3000
+3500
+G b d N v S a
+3379
+460
+1770
+Număr ouă / specie
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+60
+Fig. 46 Numărul mediu de ouă / specie
+ Acest grafic pune în vedere faptul că numărul mediu de ouă cel mai mare s-a observat la
+S. ambulans, iar numărul cel mai mic la N. valachicus.
+3.4. Dimensiunea ouălor
+Fig. 47 Volumul ouălor / specie (mm3
+)
+ Acest grafic evidențiază faptul că ouăle speciei G. b. dacicus sunt cele mai mari, cele mai
+mici aparținând la S. ambulans.
+0
+5
+10
+15
+20
+25
+30
+G b d N v S a
+20
+17
+25
+Numărul mediu de ouă / specie
+0,000
+0,010
+0,020
+0,030
+0,040
+0,050
+0,060
+0,070
+Gbd Nv Sa
+0,064
+0,035
+0,013
+Volumul ouălor / specie (mm3)
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+61
+3.5. Indici
+Fig. 48 Fecunditatea parțială / specie
+ Acest grafic pune în evidență faptul că fecunditatea parțială cea mai mare se înregistrează
+la S. ambulans și că aceasta este mult mai mare decât la celelalte două specii, iar cea mai
+mică este la N. valachicus.
+Fig. 49 Indice de maturitate / specie
+ Acest grafic pune în evidență faptul că indicele de maturitate cel mai mare se
+înregistrează la S. ambulans, iar cea mai mică la N. valachicus.
+0,000
+0,500
+1,000
+1,500
+2,000
+2,500
+3,000
+3,500
+4,000
+G b d N v S a
+1,621
+1,335
+3,647
+Fecunditate parțială / specie
+0,000
+0,200
+0,400
+0,600
+0,800
+G b d N v S a
+0,633
+0,563
+0,682
+Index de maturitate / specie
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+62
+3.6. Date statistice
+ În urma determinării corelației dintre lungimea femelelor ovigere și numărul de ouă au
+rezultat următoarele date:
+Specie Parametru Existența corelației
+G. b. dacicus
+Lungime
+femele ovigere
+Număr ouă
+DA
+N. valachicus NU
+S. ambulans DA
+Tabel 1 Existența corelației între lungimea femelelor ovigere și numărul lor de ouă
+ Utilizând testele nonparametrice Mann-Whitney U, Kolmogorov-Smirnov și KruskalWallis am determinat existența unor diferențe semnificative între cele trei specii privind
+fecunditatea parțială a acestora. Datele obținute au fost trecute în următorul tabel:
+Fecunditate
+Parțială
+G. b. dacicus N. valachicus S. ambulans
+G. b. dacicus - 0.1507 <0.0001
+N. valachicus 0.098 - <0.0001
+S. ambulans <0.0001 <0.0001 -
+Tabel 2 Comparație între fecunditatea parțială a celor 3 specii. Sub diagonală, valorile
+testului neparametric Kolmogorov-Smirnov, deasupra diagonalei, Mann-Whitney U. Bold =
+diferențe statistic semnificative.
+ Valoarea testului Kruskal-Wallis pentru fecunditatea parțială a celor trei specii este
+<0.0001, ceea ce înseamnă că există diferențe statistic semnificative. 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+63
+Concluzii
+Ciclu de viață este de doi ani la Gammarus balcanicus ssp. dacicus și Niphargus
+valachicus, iar la Synurella ambulans este de un an.
+Gammarus balcanicus ssp. dacicus este specia cea mai abundentă (2714 din totalul de
+4854 indivizi, ceea ce reprezintă 56%). N. valachicus a fost găsit cu o abundență de 14%, iar
+S. ambulans a fost colectată cu o abundență de 30% din totalul de indivizi.
+G. b. dacicus și N. valachicus au cel mai mare număr de indivizi în lunile iunie și iulie,
+imediat după ieșirea juvenililor din ou, iar S. ambulans în luna noiembrie.
+Gammarus balcanicus ssp. dacicus este specia cu cea mai mare lungime medie a corpului
+și cu cea mai mare lungime medie a masculilor, iar cea mai mică lungime medie se
+înregistrează la Synurella ambulans
+ N. valachicus este specia cu cele mai mari femele, iar S. ambulans cu cele mai mici.
+ G. b. dacicus se reproduce pe toată perioada anului, în timp ce S. ambulans și N.
+valachicus se reproduc o singură dată pe an, de la începutul primăverii până la începutul
+verii.
+ G. b. dacicus are cel mai mare număr de ouă / specie și cele mai mari ouă, iar S.
+ambulans are cele mai puține și cele mai mici ouă.
+Synurella ambulans are cea mai mare fecunditate parțială și cel mai mare index de
+maturia, în timp ce Niphargus valachicus are valorile cele mai mici ale acestor indici.
+ În urma analizei statistice s-a determinat faptul că există corelație între lungimea
+femelelor ovigere și numărul de ouă la G. b. dacicus și la S. ambulans.
+ Valorile obținute în urma efectuării testelor neparametrice Mann-Whitney U,
+Kolmogorov-Smirnov și Kruskal-Wallis am determinat că există diferențe semnificative între
+fecunditatea pațială a celor trei specii, dar nu între G. b. dacicus și N. valachicus.
+ Presupun că simpatria acestor trei specii, adică coexistența lor, se datorează în parte
+ansamblului de factori ai ciclului de viață cum ar fi diferențele semnificative în ceea ce
+privește fecunditatea lor parțială, perioadele diferite de reproducere, diferențe de dimensiune,
+abundență, strategii de reproducere. 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+64
+ Mulțumiri
+ Doresc să mulțumesc pe această cale lui Denis Copilaș-Ciocianu pentru ajutorul acordat
+în prelevarea probelor și analiza lor, pentru îndrumare în cadrul acestei lucrări și pentru
+fotografii. De asemenea doresc să-i mulțumesc pentru ajutorul acordat în prelevarea probelor și
+pentru fotografii lui Marius-Gavril Berchi. Mulțumesc și colegilor mei, Lauriana-Eunice Zbîrcea
+și Marius-Valentin Cuțitar pentru fotografii și pentru ajutorul acordat în analiza probelor.
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+65
+Bibliografie
+1) Adam O., Degiorgi F., Crini G., Badot P-M.., 2010. High sensitivity of Gammaru ssp.
+juveniles to deltamethrin: Outcomes for risk assessment. Ecotoxicology and
+Environmental Safety 73: 1402–1407
+2) Akbulut M., Sezgin M., Çulha M., Bat L., 2001. On the Occurrence of Niphargus
+valachicus Dobreanu & Manolache, 1933 (Amphipoda, Gammaridae) in the Western
+Black Sea Region of Turkey. Turkish Journal of Zoology 25: 235-239
+3) Alonso Á., De Lange H. J., Peeters E. T. H. M., 2009. Development of a feeding
+behavioural bioassay using the freshwater amphipod Gammarus pulex and the
+Multispecies Freshwater Biomonitor. Chemosphere 75: 341–346
+4) Beatty R. A., 1949. The Pigmentation of Cavernicolous Animals. III. The Carotenoid
+Pigments of Some Amphipod Crustacea. Journal of Experimental Biology 26: 125-130
+5) Bloor M. C., Banks C. J., 2006. An evaluation of mixed species in-situ and ex-situ
+feeding assays: The altered response of Asellus aquaticus and Gammarus pulex.
+Environment International 32: 22 – 27
+6) Boets P., Lock K., Goethals P. L.M., 2010. First record of Synurella ambulans (Müller
+1846) (Amphipoda: Crangonictidae) in Belgium. Belgian Journal of Zoology 140 (2):
+244-245
+7) Borowsky B., 1984. The Use Of The Males’ Gnathopods During Precopulation In Some
+Gammaridean Amphipods. Crustaceana 47 (3)
+8) Cărăuşu S., Dobreanu E., Manolache C, 1955. Fauna Republicii Populare Române,
+Crustacea, Amphipoda, Forme salmastre şi de apă dulce. Editura Academiei Republicii
+Populare Române, 4 (4)
+9) De Lange H. J., Lürling M., Van Den Borne B., Peeters E. T. H. M., 2005. Attraction of
+the amphipod Gammarus pulex to water-borne cues of food. Hydrobiologia 544: 19–25
+10) Dedecker A. P., Goethals P. L. M., D’heygere T., De Pauw N., 2006. Development of an
+in-stream migration model for Gammarus pulex L. (Crustacea, Amphipoda) as a tool in
+river restoration management. Aquatic Ecology 40: 249 –261 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+66
+11) DiSalvo B. C., 2006. Colonization and Persistence of the Freshwater Amphipod,
+Crangonyx pseudogracilis, in Temporary Ponds: Aspects of its Ecology, Resistance to
+Desiccation, and Dispersal Abilities. Environmental Science and Biology Theses, Paper
+77
+12) Fišer C., Keber R., Kereži V., Moškrič A., Palandančič A., Petkovska V., Potočnik H.,
+Sket B.. Coexistence of species of two amphipod genera: Niphargus timavi (Niphargidae)
+and Gammarus fossarum (Gammaridae), Journal of Natural History, 41: 41, 2641 —
+2651
+13) Gerhardt A., Bloor M., Lloyd Mills C., 2011. Gammarus: Important Taxon in Freshwater
+and Marine Changing Environments. International Journal of Zoology
+14) Grabowski M., Bacela-Spychalska K., Pešić V., 2014. Reproductive traits and
+conservation needs of the endemic gammarid Laurogammarus scutarensis (Schäferna,
+1922) from the Skadar Lake system, Balkan Peninsula. Limnologica
+15) Grabowski M., Mamos T., 2010. Contact Zones, Range Boundaries, And Vertical
+Distribution Of Three Epigean Gammarids (Amphipoda) In The Sudeten And Carpathian
+Mountains (Poland). Crustaceana 84 (2): 153-168
+16) Henry K. S., Danielopol D. L., 1999. Oxygen dependent habitat selection in surface and
+hyporheic environments by Gammarus roeseli Gervais (Crustacea, Amphipoda):
+experimental evidence. Hydrobiologia 390: 51–60
+17) Kinzler W., Kley A., Mayer G., Waloszek D., Maier G., 2009. Mutual predation between
+and cannibalism within several freshwater gammarids: Dikerogammarus villosus versus
+one native and three invasives. Aquatic Ecology 43: 457–464
+18) Kiss A., 2002. Rezervația Ornitologică Satchinez. Excelsior
+19) Konopacka A., Blazewicz-Paszkovicz M., 2000. Life hystory of Synurella ambulans (F.
+Müller, 1846) (Amphypoda, Crangonyctidae) from central Poland. Polskie Archivum
+Hydrobiologii
+20) Macneil C., Dick J. T. A., Elwood R. W., 1997. The Trophic Ecology Of Freshwater
+Gammarus Spp. (Crustacea:Amphipoda): Problems And Perspectives Concerning The
+Functional Feeding Group Concept. Biol. Rev. 72, pp. 349-364
+21) McMenamin M. A. S., Zapata L. P., Hussey M. C., 2013. A Triassic giant amphipod
+from Nevada, USA. Journal of Crustacean Biology, 33 (6) 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+67
+22) Médoc V., Bollache L., Beisel J-N., 2006. Host manipulation of a freshwater crustacean
+(Gammarus roeseli) by an acanthocephalan parasite (Polymorphus minutus) in a
+biological invasion context. International Journal for Parasitology 36: 1351–1358
+23) Mekhanikova I. V., 2010. Morphology of mandible and lateralia in six endemic
+amphipods (Amphipoda, Gammaridea) from Lake Baikal, in relation to feeding.
+Crustaceana 83 (7): 865-887
+24) Meyer-Rochow B., 2001. The Crustacean Eye: Dark/ Light Adaptation, Polarization
+Sensitivity, Flicker Fusion Frequency, and Photoreceptor Damage. Zoological Science 18
+(9): 1175-1197
+25) Mirzajani A. R., Sayadrahim M., Sari A. R., 2011. Reproductive traits of some
+amphipods (Crustacea: Peracarida) in different habitats of Iran and Southern Caspian Sea.
+International Journal of Zoology
+26) Morino H., 1978. Studies On The Talitridae (Amphipoda, Crustacea) In Japan III. Life
+History And Breeding Activity Of Orchestia platensis Krǿyer. Publications Of The Seto
+Marine Biological Laboratory. 24: 245-267.
+27) Muskó I. B., 1990. Qualitative and quantitative relationships of Amphipoda (Crustacea)
+living on macrophytes in Lake Balaton (Hungary). Hydrobiologia 191: 269-274
+28) Neuparth T., Costa F. O., Costa M. H., 2002. Effects of Temperature and Salinity On
+Life History Of The Marine Amphipod Gammarus locusta. Implications for
+Ecotoxicological Testing. Ecotoxicology 11: 61-73
+29) Platvoet D., Dick J. T. A., Konijnendijk N., va der Velde G., 2006. Feeding on microalgae in the invasive Ponto-Caspian amphipod Dikerogammarus villosus (Sowinsky,
+1894). Aquatic Ecology 40: 237 –245
+30) Poltermann M., Hop H., Falk-Petersen S., 2000. Life under Arctic sea ice - reproduction
+strategies of two sympagic (ice-associated) amphipod species, Gammarus wilkitzkii and
+Apherusa glacialis. Marine Biology 136: 913-920
+31) Rodgers-Gray T. P., Smith J. E., Ashcroft A. E., Isaac R. E., Dunn A. M., 2004.
+Mechanisms of parasite-induced sex reversal in Gammarus duebeni. International Journal
+for Parasitology 34: 747–753
+32) Rukke N. A., 2002. Effects of low calcium concentrations on two common freshwater
+crustaceans, Gammarus lacustris and Astacus astacus. Functional Ecology 16: 357-366 
+Ciclul de viaţă a trei specii de amfipode simpatrice (Pancsrustaceea: Amphipoda):
+Gammarus balcanicus ssp. dacicus, Niphargus valachicus şi Synurella ambulans
+68
+33) Sainte-Marie B., 1991. A review of the reproductive bionomics of aquatic gammaridean
+amphipods: variation of life history traits with latitude, depth, salinity and superfamily.
+Hydrobiologia 223: 189-227
+34) Sidorov D., Palatov D., 2012. Taxonomy of the spring dwelling amphipod Synurella
+ambulans (Crustacea: Crangonyctidae) in West Russia: with notes on its distribution and
+ecology. European Journal of Taxonomy 23: 1-19
+35) Stănescu D., 2005. Mlaștinile de la Satchinez. Flora și fauna ariei protejate. Artpress
+36) Sutcliffe D. W., 1992. Reproduction in Gammarus (Crustacea, Amphipoda): basic
+processes. Freshwater Forum 2 (2): 102-128
+37) Sutcliffe D. W., 1993. Reproduction in Gammarus (Crustacea, Amphipoda): female
+strategies. Freshwater Forum, 3(1), pp. 26-64.
+38) Ujvári I., 1972. Geografia apelor României. Editura științifică. București. p. 339-340
+39) Väinölä R., Witt J. D. S., Grabowski M., Bradbury J. H., Jazdzewski K., Sket B., 2008.
+Global diversity of amphipods (Amphipoda; Crustacea) in freshwater. Hydrobiologia
+595:241–255
+40) Wildish, D. J., 1982. Evolutionary ecology of reproduction in gammaridean Amphipoda.
+International Journal of Invertebrate Reproduction. 5: 1-19.
+41) Wudkevich K., Wisenden B. D., Chivers D. P., Smith R. J. F., 1997. Reactions of
+Gammarus lacustris to chemical stimuli from natural predators and injured conspecifics.
+Journal of Chemical Ecology, 23 (4): 1163-1173 
