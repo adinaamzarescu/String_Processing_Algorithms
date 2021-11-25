@@ -58,12 +58,12 @@ of each algorithm in _out-rk_ and _out-kmp_.
   * One text contains only one letter (test 3)
   * The 15th test is empty
   * I also have tests that contain only
-        * numbers (tests 16, 17 and 18)
-        * letters 
-          * lower (tests 30 and 31)
-          * upper (tests 32 and 33)
-          * mixt (tests 27, 28 and 29)
-        * symbols (tests 19, 20 and 21)
+        ** numbers (tests 16, 17 and 18)
+        ** letters 
+          *** lower (tests 30 and 31)
+          *** upper (tests 32 and 33)
+          *** mixt (tests 27, 28 and 29)
+        ** symbols (tests 19, 20 and 21)
    * Tests 22 to 25 have as a pattern a paragraph
    * The 26th test has the same pattern and text
    * 
