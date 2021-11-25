@@ -63,9 +63,9 @@ of each algorithm in _out-rk_ and _out-kmp_.
       
       * letters
        
-          ** lower (tests 30 and 31)
-          ** lpper (tests 32 and 33)
-          ** mixt (tests 27, 28 and 29)
+          * lower (tests 30 and 31)
+          * lpper (tests 32 and 33)
+          * mixt (tests 27, 28 and 29)
        
       * symbols (tests 19, 20 and 21)
    * Tests 22 to 25 have as a pattern a paragraph
