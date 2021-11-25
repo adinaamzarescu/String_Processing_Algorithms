@@ -59,15 +59,15 @@ of each algorithm in _out-rk_ and _out-kmp_.
   * The 15th test is empty
   * I also have tests that contain only
   
-      ** numbers (tests 16, 17 and 18)
+      * numbers (tests 16, 17 and 18)
       
-       ** letters
+      * letters
        
-       *** lower (tests 30 and 31)
-       *** upper (tests 32 and 33)
-       *** mixt (tests 27, 28 and 29)
+          ** lower (tests 30 and 31)
+          ** lpper (tests 32 and 33)
+          ** mixt (tests 27, 28 and 29)
        
-       ** symbols (tests 19, 20 and 21)
+      * symbols (tests 19, 20 and 21)
    * Tests 22 to 25 have as a pattern a paragraph
    * The 26th test has the same pattern and text
    * 
