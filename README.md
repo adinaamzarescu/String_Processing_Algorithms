@@ -37,8 +37,7 @@ ________________________________________________________________________________
 
 ## Tests
 
-  * Source
-    * Some of them were created by me
+  * Sources
     * Some were generated using https://pinetools.com/random-string-generator
     * Some were generated using https://loremipsum.io/generator/
     * For the genetic codes: http://faculty.ucr.edu/~mmaduro/random.htm
