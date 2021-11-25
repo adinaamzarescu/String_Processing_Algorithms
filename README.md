@@ -35,7 +35,7 @@ The time complexity of KMP is O(n).
  
 ______________________________________________________________________________________________________________
 
-### Tests
+## Tests
 
   * Source
     * Some of them were created by me
@@ -47,7 +47,7 @@ For testing the 2 aglorithms I created 40 tests. You can find them in _input_.
 For both algorithms I used the same tests. As you can see, the results are the same. You can find the output
 of each algorithm in _out-rk_ and _out-kmp_.
 
-#### _Details_
+### _Details_
 
   * Multiple spacing(test 1, 2, 5, 7)
   * Large and small texts
