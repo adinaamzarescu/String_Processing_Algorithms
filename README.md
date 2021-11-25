@@ -70,8 +70,8 @@ of each algorithm in _out-rk_ and _out-kmp_.
       * symbols (tests 19, 20 and 21)
    * Tests 22 to 25 have as a pattern a paragraph
    * The 26th test has the same pattern and text
-   * Since those 2 algorithms are used to detect plagiarism 
-     I included 5 tests (34 to 38) in which the text is a senior thesis
+   * Since those 2 algorithms are used to detect plagiarism I included 5 tests (34 to 38)
+     in which the text is a senior thesis
 
 In order to test other files, you need to add it in the **in_files** array.
 
