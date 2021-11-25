@@ -48,8 +48,6 @@ For testing the 2 aglorithms I created 40 tests. You can find them in _input_.
 For both algorithms I used the same tests. As you can see, the results are the same. You can find the output
 of each algorithm in _out-rk_ and _out-kmp_.
 
-----
-
 ### _Details_
 
   * Multiple spacing (test 1, 2, 5, 7)
@@ -77,8 +75,8 @@ of each algorithm in _out-rk_ and _out-kmp_.
      in which the text is a senior thesis
    * Also those 2 algorithms are used to detect abnormalities in the genetic code, I also
      included 2 tests (38 and 39) in which the text is a DNA sequence
-     
----
+
+______________________________________________________________________________________________________________
 
 In order to test other files, you need to add them in the **in_files** array.
 
