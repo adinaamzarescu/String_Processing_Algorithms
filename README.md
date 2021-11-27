@@ -2,7 +2,7 @@
 ## Copyright 2021 Adina-Maria Amzarescu 321CA
 
 This is a project that tests 2 string processing algorithms, **Rabin-Karp** and **Knuth-Morris-Pratt**.
-The algorithms were tested in C language.
+The algorithms were tested in C language. 
 
 ______________________________________________________________________________________________________________
 
@@ -28,6 +28,7 @@ appears more than one in the sub-pattern, it uses that property to improve the t
 
 The time complexity of KMP is O(n).
 
+
 * Source of inspiration: https://www.geeksforgeeks.org/c-program-for-kmp-algorithm-for-pattern-searching-2/
 
   I changed the function to match my tests, I added the out file in the header and also
@@ -46,6 +47,7 @@ For testing the 2 aglorithms I created 40 tests. You can find them in _input_.
 
 For both algorithms I used the same tests. As you can see, the results are the same. You can find the output
 of each algorithm in _out-rk_ and _out-kmp_.
+
 
 ### _Details_
 
