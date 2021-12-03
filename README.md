@@ -70,6 +70,7 @@ of each algorithm in _out-rk_ and _out-kmp_.
           * mixt (tests 27, 28 and 29)
        
       * symbols (tests 19, 20 and 21)
+     
    * Tests 22 to 25 have as a pattern a paragraph
    * The 26th test has the same pattern and text
    * Since those 2 algorithms are used to detect plagiarism I included 5 tests (34 to 38)
