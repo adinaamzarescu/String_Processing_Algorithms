@@ -1,30 +1,13 @@
-CC=gcc
-CFLAGS=-std=c99 -Wall -Wextra -g
-RK=Rabin_Karp
-KMP=Knuth_Morris_Pratt
+SRC = $(wildcard *.java)
 
-build: rk kmp
+TARGET = Main.class
 
-run-best:
-	./kmp
-run-p1:
-	./kmp
-run-p2:
-	./rk
+build: $(TARGET)
 
-rk:  $(RK).o
-	$(CC) $^ -o $@
-
-kmp: $(KMP).o
-	$(CC) $^ -o $@
-
-$(RK).o: $(RK).c
-	$(CC) $(CFLAGS) $^ -c
-
-$(KMP).o: $(KMP).c
-	$(CC) $(CFLAGS) $^ -c
-
-.PHONY: build clean
+$(TARGET): $(SRC)
+	javac $^
 
 clean:
-	rm -f *.o kmp rk
+	rm -f *.class
+
+.PHONY: build clean
