@@ -1,0 +1,68 @@
+#!/usr/bin/python3
+
+import inspect
+import pathlib
+import os
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(
+    inspect.getfile(inspect.currentframe())))
+root_dir = pathlib.Path(current_dir).parent.parent
+sys.path.insert(0, str(root_dir))
+
+from check_utils.grader import Grader
+
+class ReclameGrader(Grader):
+
+    def read_network(self, input):
+        variables = [int(x) for x in input[0].split()]
+        if len(variables) == 3:
+            n, _, k = variables
+        else:
+            n, _ = variables
+            k = None
+        network = [[] for _ in range(n)]
+        for i in range(1, n):
+            node, neigh = [int(x) for x in input[i].split()]
+            network[node - 1].append(neigh - 1)
+            network[neigh - 1].append(node - 1)
+        return network, k
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+    def verify_group(self, network, groups):
+        for node, neightbours in enumerate(network):
+            for neigh in neightbours:
+                if node not in groups and neigh not in groups:
+                    return False
+        return True
+
+    def grade_test(self):
+        input, output, ref = self.read()
+        network, _ = self.read_network(input)
+        
+        try:
+            k = int(ref[0])
+        except:
+            self.exit(code=-1, err=f"No output")
+
+        try:
+            groups = [int(x) - 1 for x in output[0].split()]
+        except:
+            self.exit(code=-1, err=f"Not valid output")
+
+        if len(groups) != k:
+            self.exit(code=-1, err=f"wrong length of group: expected {k}, got {len(groups)}.")
+ 
+        if not self.verify_group(network, groups):
+            self.exit(code=-1, err=f"wrong answer")
+        self.add_points(self.max_points)
+
+
+
+        
+if __name__ == '__main__':
+    assert len(sys.argv) == 5, sys.argv
+    ReclameGrader(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]).run()
